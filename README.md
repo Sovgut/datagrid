@@ -2,7 +2,8 @@
 
 A powerful, flexible, and type-safe data grid component for React applications with built-in support for pagination, sorting, and filtering.
 
-> **Note**: This package provides only the logic and state management for data grids. It does not include any styling or rendering components. It's designed to be a foundation for building your own table UI components.
+> [!NOTE]
+> This package provides only the logic and state management for data grids. It does not include any styling or rendering components. It's designed to be a foundation for building your own table UI components.
 
 ## Key Features
 
