@@ -50,7 +50,10 @@ export function DataGridReducer(state: DataGridState, action: DataGridAction) {
     }
   }
 
-  if (action.command === DataGridCommand.SetOrder) {
+  if (
+    action.command === DataGridCommand.SetOrder ||
+    action.command === DataGridCommand.ToggleOrder
+  ) {
     clone.order = action.order;
 
     if (clone.page !== action.page) {
