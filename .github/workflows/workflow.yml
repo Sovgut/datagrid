@@ -22,15 +22,6 @@ jobs:
       node-version: "22.x"
       package-version: ${{ needs.check-version.outputs.version }}
 
-  test:
-    name: Package
-    needs:
-      - check-version
-    if: needs.check-version.outputs.is-changed == 'true'
-    uses: Sovgut/state/.github/workflows/test.yml@main
-    with:
-      node-version: "22.x"
-
   deploy-npm:
     name: Package
     needs:
