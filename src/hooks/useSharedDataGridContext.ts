@@ -5,9 +5,9 @@ import {
   DEFAULT_ORDER,
   DEFAULT_PAGE,
   DEFAULT_SORT,
-} from "../DataGrid.constants";
-import { DataGridSourceReducer } from "../DataGrid.reducer";
-import { SharedDataGridContext } from "../DataGrid.types";
+} from "../constants";
+import { DataGridReducer } from "../reducer/DataGridReducer";
+import { SharedDataGridContext } from "../types";
 import { DataGridInitialProps } from "../DataGrid";
 
 /**
@@ -42,7 +42,7 @@ import { DataGridInitialProps } from "../DataGrid";
 export function useSharedDataGrid(
   props?: DataGridInitialProps
 ): SharedDataGridContext {
-  const reducer = useReducer(DataGridSourceReducer, {
+  const reducer = useReducer(DataGridReducer, {
     filter: props?.initialFilter ?? DEFAULT_FILTER,
     limit: props?.initialLimit ?? DEFAULT_LIMIT,
     order: props?.initialOrder ?? DEFAULT_ORDER,

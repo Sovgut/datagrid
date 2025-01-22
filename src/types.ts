@@ -1,5 +1,5 @@
 import { Dispatch, ReactElement, ReactNode } from "react";
-import { DataGridSourceAction, DataGridSourceState } from "./DataGrid.reducer";
+import { DataGridAction, DataGridState } from "./reducer/DataGridReducer";
 
 /**
  * Interface for pagination functionality
@@ -77,16 +77,18 @@ export interface IFilterable {
 }
 
 /**
- * Interface for sorting functionality
+ * Interface for sorting functionality.
+ * Supports sorting by a single column at a time.
  */
 export interface ISortable {
   /**
-   * Current sort column
+   * Current active sort column key.
+   * Only one column can be sorted at a time.
    */
   sort: ISort;
 
   /**
-   * Current sort order
+   * Current sort order for the active sort column
    */
   order: IOrder;
 
@@ -282,15 +284,12 @@ export type ExpectedAny = any;
 
 /**
  * Represents the shared context tuple for the DataGrid component's state management.
- * This type follows the React Context pattern for managing grid data source state.
+ * This type follows the React Context pattern for managing grid data state.
  *
- * @property {DataGridSourceState} [0] - Current state of the data grid source
- * @property {Dispatch<DataGridSourceAction>} [1] - Dispatch function to update the grid state
+ * @property {DataGridState} [0] - Current state of the data grid
+ * @property {Dispatch<DataGridAction>} [1] - Dispatch function to update the grid state
  *
  * @example
  * const [gridState, dispatch] = useContext<SharedDataGridContext>(DataGridContext);
  */
-export type SharedDataGridContext = [
-  DataGridSourceState,
-  Dispatch<DataGridSourceAction>
-];
+export type SharedDataGridContext = [DataGridState, Dispatch<DataGridAction>];

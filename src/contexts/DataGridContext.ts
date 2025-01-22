@@ -7,7 +7,7 @@ import {
   ILoadable,
   IPaginable,
   ISortable,
-} from "./DataGrid.types";
+} from "../types";
 
 /**
  * Represents the complete state of a DataGrid component

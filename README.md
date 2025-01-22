@@ -1,50 +1,138 @@
-# React + TypeScript + Vite
+# React DataGrid
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A powerful, flexible, and type-safe data grid component for React applications with built-in support for pagination, sorting, and filtering.
 
-Currently, two official plugins are available:
+> **Note**: This package provides only the logic and state management for data grids. It does not include any styling or rendering components. It's designed to be a foundation for building your own table UI components.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Key Features
 
-## Expanding the ESLint configuration
+- 🔍 **Built-in Filtering** - Flexible filtering system with support for multiple filter types
+- 📊 **Single Column Sorting** - Simple and efficient single-column sorting
+- 📄 **Pagination** - Built-in pagination with customizable page sizes
+- 🔄 **State Management** - Internal state management with external state support
+- 🔌 **Pluggable State** - Easy to override state management using SharedDataGridContext
+- ⌛ **Debounce Support** - Column-level debounce configuration for filter operations
+- 🔌 **Extensible** - Easy to extend and customize with your own components
+- 💪 **TypeScript Ready** - Full TypeScript support with comprehensive type definitions
+- 🧹 **Auto-cleaning** - Automatic cleanup of empty/null values from filters
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Installation
 
-- Configure the top-level `parserOptions` property like this:
+```bash
+npm install @sovgut/datagrid
+# or
+yarn add @sovgut/datagrid
+# or
+pnpm add @sovgut/datagrid
+```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
+## Basic Usage
+
+### Simple DataGrid with Sorting
+
+```tsx
+import { DataGrid } from "@sovgut/datagrid";
+
+function SimpleExample() {
+  const columns = [
+    { key: "id", label: "ID" },
+    { key: "name", label: "Name", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+  ];
+
+  const rows = [
+    { id: 1, name: "John Doe", email: "john@example.com" },
+    { id: 2, name: "Jane Smith", email: "jane@example.com" },
+  ];
+
+  return (
+    <DataGrid
+      columns={columns}
+      rows={rows}
+      size={rows.length}
+      onChange={(details) => {
+        console.log("Active sort column:", details.sort);
+        console.log("Sort direction:", details.order);
+      }}
+    >
+      <YourTableContent />
+    </DataGrid>
+  );
+}
+```
+
+### With Shared State Management
+
+```tsx
+import { DataGrid, useSharedDataGrid } from "@sovgut/datagrid";
+
+function ExternalStateExample() {
+  const [state, dispatch] = useSharedDataGrid();
+
+  useEffect(() => {
+    dispatch({ page: 2 })
+  }, [])
+
+  return (
+    <DataGrid
+      columns={columns}
+      rows={rows}
+      size={totalCount}
+      context={[state, dispatch]}
+    >
+      <YourTableContent />
+    </DataGrid>
+  );
+}
+```
+
+### With Custom Column Rendering and Filtering
+
+```tsx
+import { DataGrid, DataGridColumn } from "@sovgut/datagrid";
+
+function AdvancedExample() {
+  const columns: DataGridColumn[] = [
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+      render: (row) => <strong>{row.name}</strong>,
+      filter: <input type="text" placeholder="Filter by name..." />,
+      debounce: 300,
     },
-  },
-})
+    {
+      key: "status",
+      label: "Status",
+      filter: (
+        <select>
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      ),
+      multiple: true,
+    },
+  ];
+
+  return (
+    <DataGrid
+      columns={columns}
+      rows={rows}
+      size={totalCount}
+      initialLimit={25}
+      resetPageOnQueryChange={true}
+    >
+      <YourTableContent />
+    </DataGrid>
+  );
+}
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## License
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+MIT
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

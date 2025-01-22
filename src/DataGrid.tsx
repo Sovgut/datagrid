@@ -16,9 +16,8 @@ import {
   ILoadable,
   IOrder,
   ISort,
-} from "./DataGrid.types";
-import { DataGridSourceActionType } from "./DataGrid.reducer";
-import { DataGridContext } from "./DataGrid.context";
+} from "./types";
+import { DataGridContext } from "./contexts/DataGridContext";
 import {
   DEFAULT_FILTER,
   DEFAULT_LIMIT,
@@ -28,12 +27,12 @@ import {
   RESET_PAGE_ON_QUERY_CHANGE,
   SORT_ASC,
   SORT_DESC,
-} from "./DataGrid.constants";
+} from "./constants";
 import { CleanSense } from "./utils/cleanSense";
-import { DataGridCommand } from "./DataGrid.enums";
+import { DataGridCommand } from "./enums";
 import { debounce } from "./utils/debounce";
 import { extractChangedKey } from "./utils/extractChangedKey";
-import { useDataGridConnect } from "./hooks/useDataGridConnect";
+import { useDataGridMerge } from "./hooks/useDataGridMerge";
 
 /**
  * Props for initializing DataGrid state
@@ -182,18 +181,18 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
     },
     ref
   ) => {
-    const [source, setSource] = useDataGridConnect([context]);
+    const [state, dispatch] = useDataGridMerge([context]);
 
     const hasNextPage = useCallback(
-      () => (source.page ?? initialPage) < size,
-      [source.page, initialPage, size]
+      () => (state.page ?? initialPage) < size,
+      [state.page, initialPage, size]
     );
     const hasPrevPage = useCallback(
-      () => (source.page ?? initialPage) > 1,
-      [source.page, initialPage]
+      () => (state.page ?? initialPage) > 1,
+      [state.page, initialPage]
     );
 
-    const prevFilter = useRef(source.filter);
+    const prevFilter = useRef(state.filter);
 
     const shouldClearNullable = useMemo(
       () => clearNullable ?? true,
@@ -217,219 +216,174 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
 
     const setPage = useCallback(
       (page: number) => {
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: { ...source, page, command: DataGridCommand.SetPage },
-        });
+        dispatch({ page, command: DataGridCommand.SetPage });
 
         console.debug("DataGrid:setPage", page);
       },
-      [setSource, source]
+      [dispatch]
     );
 
     const nextPage = useCallback(() => {
       if (hasNextPage()) {
         console.debug("DataGrid:nextPage");
 
-        setPage((source?.page ?? initialPage) + 1);
+        setPage((state?.page ?? initialPage) + 1);
       }
-    }, [hasNextPage, initialPage, setPage, source?.page]);
+    }, [hasNextPage, initialPage, setPage, state?.page]);
 
     const prevPage = useCallback(() => {
       if (hasPrevPage()) {
         console.debug("DataGrid:prevPage");
 
-        setPage((source?.page ?? initialPage) - 1);
+        setPage((state?.page ?? initialPage) - 1);
       }
-    }, [hasPrevPage, initialPage, setPage, source?.page]);
+    }, [hasPrevPage, initialPage, setPage, state?.page]);
 
     const setLimit = useCallback(
       (limit: number) => {
         console.debug("DataGrid:setLimit", limit);
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            limit,
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.SetLimit,
-          },
+        dispatch({
+          limit,
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.SetLimit,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const setSort = useCallback(
       (sort: string) => {
         console.debug("DataGrid:setSort", sort);
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            sort,
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.SetSort,
-          },
+        dispatch({
+          sort,
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.SetSort,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const clearSort = useCallback(() => {
       console.debug("DataGrid:clearSort");
 
-      setSource({
-        type: DataGridSourceActionType.Set,
-        value: {
-          ...source,
-          sort: null,
-          page: resetPageOnQueryChange ? initialPage : source.page,
-          command: DataGridCommand.ClearSort,
-        },
+      dispatch({
+        sort: null,
+        page: resetPageOnQueryChange ? initialPage : state.page,
+        command: DataGridCommand.ClearSort,
       });
-    }, [initialPage, resetPageOnQueryChange, setSource, source]);
+    }, [initialPage, resetPageOnQueryChange, dispatch, state]);
 
     const setOrder = useCallback(
       (order: IOrder) => {
         console.debug("DataGrid:setOrder", order);
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            order,
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.SetOrder,
-          },
+        dispatch({
+          order,
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.SetOrder,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const toggleOrder = useCallback(() => {
       console.debug("DataGrid:toggleOrder");
 
-      setSource({
-        type: DataGridSourceActionType.Set,
-        value: {
-          ...source,
-          order:
-            source.order === SORT_ASC
-              ? SORT_DESC
-              : source.order === SORT_DESC
-              ? null
-              : SORT_ASC,
-          page: resetPageOnQueryChange ? initialPage : source.page,
-          command: DataGridCommand.ToggleOrder,
-        },
+      dispatch({
+        order:
+          state.order === SORT_ASC
+            ? SORT_DESC
+            : state.order === SORT_DESC
+            ? null
+            : SORT_ASC,
+        page: resetPageOnQueryChange ? initialPage : state.page,
+        command: DataGridCommand.ToggleOrder,
       });
-    }, [initialPage, resetPageOnQueryChange, setSource, source]);
+    }, [initialPage, resetPageOnQueryChange, dispatch, state]);
 
     const clearOrder = useCallback(() => {
       console.debug("DataGrid:clearOrder");
 
-      setSource({
-        type: DataGridSourceActionType.Set,
-        value: {
-          ...source,
-          order: null,
-          page: resetPageOnQueryChange ? initialPage : source.page,
-          command: DataGridCommand.ClearOrder,
-        },
+      dispatch({
+        order: null,
+        page: resetPageOnQueryChange ? initialPage : state.page,
+        command: DataGridCommand.ClearOrder,
       });
-    }, [initialPage, resetPageOnQueryChange, setSource, source]);
+    }, [initialPage, resetPageOnQueryChange, dispatch, state]);
 
     const setFilter = useCallback(
       (key: string, value: unknown) => {
         console.debug("DataGrid:setFilter", { key, value });
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            filter: {
-              ...source.filter,
-              [key]: value,
-            },
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.SetFilter,
+        dispatch({
+          filter: {
+            [key]: value,
           },
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.SetFilter,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const removeFilter = useCallback(
       (key: string) => {
         console.debug("DataGrid:removeFilter", { key });
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            filter: { ...source.filter, [key]: undefined },
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.RemoveFilter,
-          },
+        dispatch({
+          filter: { [key]: undefined },
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.RemoveFilter,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const replaceFilter = useCallback(
       (value: Record<string, unknown>) => {
         console.debug("DataGrid:replaceFilter", value);
 
-        setSource({
-          type: DataGridSourceActionType.Set,
-          value: {
-            ...source,
-            filter: value,
-            page: resetPageOnQueryChange ? initialPage : source.page,
-            command: DataGridCommand.ReplaceFilter,
-          },
+        dispatch({
+          filter: value,
+          page: resetPageOnQueryChange ? initialPage : state.page,
+          command: DataGridCommand.ReplaceFilter,
         });
       },
-      [initialPage, resetPageOnQueryChange, setSource, source]
+      [initialPage, resetPageOnQueryChange, dispatch, state]
     );
 
     const clearFilter = useCallback(() => {
       console.debug("DataGrid:clearFilter");
 
-      setSource({
-        type: DataGridSourceActionType.Set,
-        value: {
-          ...source,
-          filter: {},
-          page: resetPageOnQueryChange ? initialPage : source.page,
-          command: DataGridCommand.ClearFilter,
-        },
+      dispatch({
+        page: resetPageOnQueryChange ? initialPage : state.page,
+        command: DataGridCommand.ClearFilter,
       });
-    }, [initialPage, resetPageOnQueryChange, setSource, source]);
+    }, [initialPage, resetPageOnQueryChange, dispatch, state]);
 
     useEffect(() => {
       const details: DataGridChangeDetails = {};
 
-      if (typeof source.page !== "undefined") {
-        details.page = source.page;
+      if (typeof state.page !== "undefined") {
+        details.page = state.page;
       }
 
-      if (typeof source.limit !== "undefined") {
-        details.limit = source.limit;
+      if (typeof state.limit !== "undefined") {
+        details.limit = state.limit;
       }
 
-      if (typeof source.sort !== "undefined" && source.sort !== null) {
-        details.sort = source.sort;
+      if (typeof state.sort !== "undefined" && state.sort !== null) {
+        details.sort = state.sort;
       }
 
-      if (typeof source.order !== "undefined" && source.order !== null) {
-        details.order = source.order;
+      if (typeof state.order !== "undefined" && state.order !== null) {
+        details.order = state.order;
       }
 
-      if (source.filter && Object.keys(source.filter).length > 0) {
-        details.filter = source.filter;
+      if (state.filter && Object.keys(state.filter).length > 0) {
+        details.filter = state.filter;
 
         if (shouldClearNullable) {
           CleanSense.null(details.filter);
@@ -448,11 +402,11 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
         }
       }
 
-      console.debug("DataGrid:DataGridChangeDetails", details, source.command);
+      console.debug("DataGrid:DataGridChangeDetails", details, state.command);
 
       if (
         !Object.is(prevFilter, details.filter) &&
-        source.command === DataGridCommand.SetFilter
+        state.command === DataGridCommand.SetFilter
       ) {
         const changedKey = extractChangedKey([
           prevFilter.current,
@@ -476,7 +430,7 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
 
       onChange?.(details);
     }, [
-      source,
+      state,
       shouldClearNullable,
       shouldClearUndefined,
       shouldClearEmptyString,
@@ -488,8 +442,8 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
     ]);
 
     useEffect(() => {
-      prevFilter.current = source.filter;
-    }, [source.filter]);
+      prevFilter.current = state.filter;
+    }, [state.filter]);
 
     useImperativeHandle(ref, () => ({
       setPage,
@@ -512,11 +466,11 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
     return (
       <DataGridContext.Provider
         value={{
-          page: source.page ?? initialPage,
-          limit: source.limit ?? initialLimit,
-          sort: source.sort ?? initialSort,
-          order: source.order ?? initialOrder,
-          filter: source.filter ?? initialFilter,
+          page: state.page ?? initialPage,
+          limit: state.limit ?? initialLimit,
+          sort: state.sort ?? initialSort,
+          order: state.order ?? initialOrder,
+          filter: state.filter ?? initialFilter,
 
           setPage,
           setLimit,

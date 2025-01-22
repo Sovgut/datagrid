@@ -1,12 +1,15 @@
 import { useContext } from "react";
-import { DataGridContext, DataGridContextState } from "./DataGrid.context";
+import {
+  DataGridContext,
+  DataGridContextState,
+} from "../contexts/DataGridContext";
 
 /**
  * Custom hook to access the DataGrid context state
- * 
+ *
  * @returns The DataGrid context state containing grid configuration and data
  * @throws {ReferenceError} When used outside of a DataGridProvider
- * 
+ *
  * @example
  * function MyComponent() {
  *   const { data, loading } = useDataGrid();

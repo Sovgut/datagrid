@@ -1,35 +1,35 @@
-import { useSharedDataGrid } from "./useSharedDataGrid";
-import { SharedDataGridContext } from "../DataGrid.types";
+import { useSharedDataGrid } from "./useSharedDataGridContext";
+import { SharedDataGridContext } from "../types";
 
 /**
  * Hook for managing DataGrid state context connections
- * 
+ *
  * @description
  * Manages the connection between external and internal DataGrid states.
  * Prioritizes external contexts if provided, otherwise falls back to internal state.
  * Useful for composing multiple DataGrid contexts or switching between internal/external state management.
- * 
+ *
  * @param {Array<SharedDataGridContext | undefined>} [context] - Array of potential external DataGrid contexts
  * @returns {SharedDataGridContext} The first valid context from the provided array or internal state if none found
- * 
+ *
  * @example
  * ```tsx
  * // Using with multiple potential contexts
- * const gridContext = useDataGridConnect([
+ * const gridContext = useDataGridMerge([
  *   searchParamsContext,  // URL search params context
  *   externalStateContext, // External state management context
  * ]);
- * 
+ *
  * // Using with single external context
- * const gridContext = useDataGridConnect([externalContext]);
- * 
+ * const gridContext = useDataGridMerge([externalContext]);
+ *
  * // Using with internal state only
- * const gridContext = useDataGridConnect();
+ * const gridContext = useDataGridMerge();
  * ```
- * 
+ *
  * @returns {SharedDataGridContext} A tuple containing [state, dispatch] for DataGrid
  */
-export function useDataGridConnect(
+export function useDataGridMerge(
   context?: Array<SharedDataGridContext | undefined>
 ): SharedDataGridContext {
   const internalReducer = useSharedDataGrid();
