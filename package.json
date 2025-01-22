@@ -1,7 +1,17 @@
 {
   "name": "@sovgut/datagrid",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sovgut/datagrid.git"
+  },
+  "author": {
+    "name": "Serhii Sovhut",
+    "url": "https://github.com/Sovgut"
+  },
+  "keywords": [],
+  "license": "MIT",
   "files": [
     "dist"
   ],
