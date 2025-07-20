@@ -1,6 +1,6 @@
 import {
-  forwardRef,
   PropsWithChildren,
+  Ref,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -139,6 +139,8 @@ export interface DataGridProps
   onChange?: (details: DataGridChangeDetails) => void;
 
   context?: SharedDataGridContext;
+
+  ref?: Ref<DataGridRef>
 }
 
 /**
@@ -157,9 +159,8 @@ export interface DataGridProps
  * </DataGrid>
  * ```
  */
-export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
-  (
-    {
+export function DataGrid(props: DataGridProps) {
+    const {
       initialPage = DEFAULT_PAGE,
       initialLimit = DEFAULT_LIMIT,
       initialSort = DEFAULT_SORT,
@@ -178,9 +179,9 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
       clearEmptyArray,
       onChange,
       context,
-    },
-    ref
-  ) => {
+      ref,
+    } = props
+
     const [state, dispatch] = useDataGridMerge([context]);
 
     const hasNextPage = useCallback(
@@ -500,4 +501,3 @@ export const DataGrid = forwardRef<DataGridRef, DataGridProps>(
       </DataGridContext.Provider>
     );
   }
-);
