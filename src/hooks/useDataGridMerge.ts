@@ -1,46 +1,27 @@
 import { useSharedDataGrid } from "./useSharedDataGridContext";
-import { SharedDataGridContext } from "../types";
+import type { SharedDataGridContext } from "../types";
 
 /**
- * Hook for managing DataGrid state context connections
+ * A utility hook that selects the definitive DataGrid state context to use for the `<DataGrid>` component.
+ * It iterates through an array of potential external contexts and uses the first valid one it finds.
+ * If no valid external context is provided, it falls back to creating its own internal state.
+ * This makes it easy to build components that can be either controlled (from the outside) or uncontrolled (managing their own state).
  *
- * @description
- * Manages the connection between external and internal DataGrid states.
- * Prioritizes external contexts if provided, otherwise falls back to internal state.
- * Useful for composing multiple DataGrid contexts or switching between internal/external state management.
- *
- * @param {Array<SharedDataGridContext | undefined>} [context] - Array of potential external DataGrid contexts
- * @returns {SharedDataGridContext} The first valid context from the provided array or internal state if none found
- *
- * @example
- * ```tsx
- * // Using with multiple potential contexts
- * const gridContext = useDataGridMerge([
- *   searchParamsContext,  // URL search params context
- *   externalStateContext, // External state management context
- * ]);
- *
- * // Using with single external context
- * const gridContext = useDataGridMerge([externalContext]);
- *
- * // Using with internal state only
- * const gridContext = useDataGridMerge();
- * ```
- *
- * @returns {SharedDataGridContext} A tuple containing [state, dispatch] for DataGrid
+ * @param {Array<SharedDataGridContext | undefined>} [context] - An optional array of external `[state, dispatch]` contexts to prioritize.
+ * @returns {NonNullable<SharedDataGridContext>} The first valid external context from the array, or a newly created internal context if none are found.
  */
 export function useDataGridMerge(
   context?: Array<SharedDataGridContext | undefined>
-): SharedDataGridContext {
+): NonNullable<SharedDataGridContext> {
   const internalReducer = useSharedDataGrid();
 
   if (context) {
     for (const external of context) {
       if (external) {
-        return external;
+        return external; // Use the first valid external context.
       }
     }
   }
 
-  return internalReducer;
+  return internalReducer; // Fallback to internal state.
 }

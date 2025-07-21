@@ -1,22 +1,17 @@
 import { useContext } from "react";
-import {
+import  {
   DataGridContext,
-  DataGridContextState,
+  type DataGridContextState,
 } from "../contexts/DataGridContext";
 
 /**
- * Custom hook to access the DataGrid context state
+ * A custom hook to easily and safely access the `DataGridContextState` from any child component
+ * rendered within a `<DataGrid>` provider.
  *
- * @returns The DataGrid context state containing grid configuration and data
- * @throws {ReferenceError} When used outside of a DataGridProvider
- *
- * @example
- * function MyComponent() {
- *   const { data, loading } = useDataGrid();
- *   return loading ? <Loader /> : <div>{data.length} items</div>;
- * }
+ * @returns {NonNullable<DataGridContextState>} The complete state of the DataGrid, including data, pagination state, and action methods.
+ * @throws {ReferenceError} If the hook is used outside of a `<DataGrid>` component tree, ensuring it's always used correctly.
  */
-export function useDataGrid(): DataGridContextState {
+export function useDataGrid(): NonNullable<DataGridContextState> {
   const dataGridContext = useContext(DataGridContext);
 
   if (!dataGridContext) {

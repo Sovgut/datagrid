@@ -7,41 +7,22 @@ import {
   DEFAULT_SORT,
 } from "../constants";
 import { DataGridReducer } from "../reducer/DataGridReducer";
-import { SharedDataGridContext } from "../types";
+import type { SharedDataGridContext } from "../types";
 import { DataGridInitialProps } from "../DataGrid";
 
 /**
- * External hook for managing DataGrid state outside of the DataGrid component
+ * A hook for creating and managing DataGrid state *outside* of the `<DataGrid>` component itself.
+ * This "lifts the state up," enabling advanced scenarios such as:
+ * - Persisting grid state (e.g., in `localStorage` or URL query parameters).
+ * - Sharing state between multiple `DataGrid` instances.
+ * - Controlling the grid from a parent component or a global state manager.
  *
- * @description
- * This hook provides external state management for DataGrid, allowing you to:
- * - Control DataGrid state from a parent component
- * - Share state between multiple DataGrids
- * - Persist DataGrid state in your application
- * - Handle complex state management scenarios
- *
- * @param {DataGridInitialProps} [props] - Optional initial configuration
- * @returns {SharedDataGridContext} [state, dispatch] tuple for external DataGrid control
- *
- * @example
- * ```tsx
- * // Parent component
- * const [dataGrid, setDataGrid] = useSharedDataGrid({
- *   initialLimit: 25,
- *   initialPage: 1
- * });
- *
- * return (›
- *   <DataGrid
- *     context={[dataGrid, setDataGrid]}
- *     // ... other props
- *   />
- * );
- * ```
+ * @param {DataGridInitialProps} [props] - Optional initial values for page, limit, sort, order, and filter.
+ * @returns {NonNullable<SharedDataGridContext>} A `[state, dispatch]` tuple for controlling the DataGrid externally.
  */
 export function useSharedDataGrid(
   props?: DataGridInitialProps
-): SharedDataGridContext {
+): NonNullable<SharedDataGridContext> {
   const reducer = useReducer(DataGridReducer, {
     filter: props?.initialFilter ?? DEFAULT_FILTER,
     limit: props?.initialLimit ?? DEFAULT_LIMIT,

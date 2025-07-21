@@ -1,60 +1,53 @@
 /**
- * Available commands for manipulating DataGrid state
- * @enum {string}
+ * Defines the set of commands that can be dispatched to manipulate the DataGrid state.
+ * Each command represents a specific state transition.
  */
 export enum DataGridCommand {
-  /**
-   * Sets the current page number
-   */
+  /** Triggers a change to the current page number for pagination. */
   SetPage,
 
-  /**
-   * Sets the number of items per page
-   */
+  /** Triggers a change to the number of items displayed per page. */
   SetLimit,
 
-  /**
-   * Sets the column to sort by
-   */
+  /** Triggers a change to the column key used for sorting. */
   SetSort,
 
-  /**
-   * Sets the sort order (ascending/descending)
-   */
+  /** Triggers a change to the sort direction ('asc' or 'desc'). */
   SetOrder,
 
-  /**
-   * Sets a filter value for a specific field
-   */
+  /** Triggers the setting or updating of a single filter value by its key. */
   SetFilter,
 
-  /**
-   * Replaces all existing filters with new ones
-   */
+  /** Triggers the replacement of the entire filter object with a new one. */
   ReplaceFilter,
 
-  /**
-   * Removes a specific filter
-   */
+  /** Triggers the removal of a single filter by its key. */
   RemoveFilter,
 
-  /**
-   * Clears all active filters
-   */
+  /** Triggers the removal of all active filters, resetting to an empty state. */
   ClearFilter,
 
-  /**
-   * Clears the current sort column
-   */
+  /** Triggers the removal of the active sort column, disabling sorting. */
   ClearSort,
 
-  /**
-   * Clears the current sort order
-   */
+  /** Triggers the removal of the active sort direction. */
   ClearOrder,
 
-  /**
-   * Toggles between ascending and descending order
-   */
+  /** Triggers a toggle of the sort direction (asc -> desc -> null -> asc). */
   ToggleOrder,
+}
+
+/**
+ * Defines the visibility states for a column within a data grid,
+ * including whether the state can be changed by the user in the UI.
+ */
+export enum DataGridColumnVisibility {
+  /** The column is visible by default and can be hidden by the user. */
+  Visible = "Visible",
+
+  /** The column is permanently hidden and cannot be made visible by the user. This is for data that is needed for logic but not for display. */
+  Restricted = "Restricted",
+
+  /** The column is hidden by default but can be made visible by the user. */
+  Hidden = "Hidden",
 }
