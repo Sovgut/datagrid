@@ -224,6 +224,18 @@ export function DataGrid(props: DataGridProps) {
     });
   }, [dispatch, initialPage, resetPageOnQueryChange, state.page]);
 
+  /** Clears the state. */
+  const clear = useCallback(() => {
+    dispatch({
+      command: DataGridCommand.ClearAll,
+      order: DEFAULT_ORDER,
+      sort: DEFAULT_SORT,
+      page: DEFAULT_PAGE,
+      limit: DEFAULT_LIMIT,
+      filter: DEFAULT_FILTER,
+    })
+  }, [dispatch])
+
   /** Sets or updates a single filter value by its key, optionally resetting to the first page. */
   const setFilter = useCallback((key: string, value: unknown) => {
     dispatch({
@@ -300,7 +312,7 @@ export function DataGrid(props: DataGridProps) {
   }, [state.filter]);
 
   // This hook exposes the grid's action methods on the `ref` object for imperative control by parent components.
-  useImperativeHandle(ref, () => ({ setPage, setLimit, setSort, setOrder, setFilter, replaceFilter, removeFilter, clearFilter, hasNextPage, hasPrevPage, nextPage, prevPage, clearOrder, clearSort, toggleOrder }));
+  useImperativeHandle(ref, () => ({ setPage, setLimit, setSort, setOrder, setFilter, replaceFilter, removeFilter, clear, clearFilter, hasNextPage, hasPrevPage, nextPage, prevPage, clearOrder, clearSort, toggleOrder }));
 
   // The component provides all resolved state and actions to its children via the DataGridContext.Provider.
   return (

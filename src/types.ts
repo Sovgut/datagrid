@@ -161,7 +161,9 @@ export interface DataGridColumn {
  */
 export type DataGridRef = Omit<IPaginable, "page" | "limit"> &
   Omit<ISortable, "sort" | "order"> &
-  Omit<IFilterable, "filter">;
+  Omit<IFilterable, "filter"> & {
+    clear: () => void
+  };
 
 /**
  * Defines the shape of the details object passed to the `onChange` callback.

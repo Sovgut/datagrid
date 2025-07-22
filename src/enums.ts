@@ -33,6 +33,9 @@ export enum DataGridCommand {
   /** Triggers the removal of the active sort direction. */
   ClearOrder,
 
+   /** Triggers the removal of all states. */
+  ClearAll,
+
   /** Triggers a toggle of the sort direction (asc -> desc -> null -> asc). */
   ToggleOrder,
 }
