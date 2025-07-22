@@ -40,13 +40,13 @@ export interface IPaginable {
  */
 export interface IFilterable {
   /** An object representing the current filter state, where keys are column identifiers and values are the filter values. */
-  filter: Record<string, unknown>;
+  filter: Record<string, ExpectedAny>;
 
   /** A function to set or update the filter value for a specific key. */
-  setFilter: (key: string, value: unknown) => void;
+  setFilter: (key: string, value: ExpectedAny) => void;
 
   /** A function to replace the entire filter object with a new one. */
-  replaceFilter: (value: Record<string, unknown>) => void;
+  replaceFilter: (value: Record<string, ExpectedAny>) => void;
 
   /** A function to remove a filter for a specific key. */
   removeFilter: (key: string) => void;
