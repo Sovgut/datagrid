@@ -15,4 +15,4 @@ export type {
   DataGridState,
 } from "./reducer/DataGridReducer.ts";
 
-export { DataGridCommand } from "./enums.ts";
+export { DataGridCommand, DataGridColumnVisibility } from "./enums.ts";
