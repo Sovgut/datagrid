@@ -1,3 +1,4 @@
+import { DEFAULT_PAGE } from "../constants";
 import { DataGridCommand } from "../enums";
 import type { IFilterable, IPaginable, ISortable } from "../types";
 
@@ -101,7 +102,7 @@ export function DataGridReducer(state: DataGridState, action: DataGridAction): D
   });
 
   if (shouldResetPage) {
-    clone.page = action.page;
+    clone.page = DEFAULT_PAGE;
   }
 
   return clone;
