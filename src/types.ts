@@ -112,7 +112,7 @@ export interface DataGridRow {
 /**
  * Defines the complete configuration for a single grid column.
  */
-export interface DataGridColumn {
+export interface DataGridColumn<Metadata = Record<string, ExpectedAny>> {
   /** A unique key identifying the column. This should typically match a key in the `DataGridRow` data objects. */
   key: string;
 
@@ -151,7 +151,7 @@ export interface DataGridColumn {
   debounce?: number;
 
   /** A free-form object to attach any other custom data or configuration to the column definition, useful for custom renderers or plugins. */
-  metadata?: Record<string, ExpectedAny>;
+  metadata?: Metadata;
 }
 
 /**
