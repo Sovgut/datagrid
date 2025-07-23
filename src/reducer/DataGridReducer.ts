@@ -9,14 +9,14 @@ export type DataGridState = Partial<
   Pick<IPaginable, "page" | "limit"> &
     Pick<ISortable, "sort" | "order"> &
     Pick<IFilterable, "filter">
-> & { command?: DataGridCommand };
+> & { commands?: DataGridCommand[] };
 
 /**
  * The shape of an action that can be dispatched to the reducer. It includes the
  * new state values and the command that triggered the update.
  */
 export type DataGridAction = DataGridState & {
-  command?: DataGridCommand;
+  commands?: DataGridCommand[];
 };
 
 /**
@@ -29,56 +29,79 @@ export type DataGridAction = DataGridState & {
  */
 export function DataGridReducer(state: DataGridState, action: DataGridAction): DataGridState {
   // Use structuredClone for a deep, safe copy to prevent direct state mutation.
-  const clone = structuredClone(state);
+  const clone = typeof window.structuredClone !== 'undefined' ? window.structuredClone(state) : JSON.parse(JSON.stringify(state));
 
-  clone.command = action.command;
+  clone.commands = action.commands;
 
-  // Reset the page number for any action that changes the dataset's content or order.
-  const shouldResetPage =
-    action.command === DataGridCommand.SetLimit ||
-    action.command === DataGridCommand.SetSort ||
-    action.command === DataGridCommand.SetOrder ||
-    action.command === DataGridCommand.ToggleOrder ||
-    action.command === DataGridCommand.ReplaceFilter ||
-    action.command === DataGridCommand.ClearFilter ||
-    action.command === DataGridCommand.ClearOrder ||
-    action.command === DataGridCommand.ClearSort;
-
-  // Handle each command to update the state accordingly.
-  switch (action.command) {
-    case DataGridCommand.SetPage:
-      clone.page = action.page;
-      break;
-    case DataGridCommand.SetLimit:
-      clone.limit = action.limit;
-      break;
-    case DataGridCommand.SetSort:
-      clone.sort = action.sort;
-      break;
-    case DataGridCommand.SetOrder:
-    case DataGridCommand.ToggleOrder:
-      clone.order = action.order;
-      break;
-    case DataGridCommand.SetFilter:
-    case DataGridCommand.RemoveFilter:
-      clone.filter = { ...clone.filter, ...action.filter };
-      break;
-    case DataGridCommand.ReplaceFilter:
-      clone.filter = action.filter;
-      break;
-    case DataGridCommand.ClearFilter:
-      clone.filter = {};
-      break;
-    case DataGridCommand.ClearOrder:
-      clone.order = null;
-      break;
-    case DataGridCommand.ClearSort:
-      clone.sort = null;
-      break;
+  // If there are no commands, no state change is needed besides updating the command list.
+  if (!action.commands?.length) {
+    return clone;
   }
 
+  // Create a set of commands that trigger a page reset for efficient lookup.
+  const pageResettingCommands = new Set([
+    DataGridCommand.SetLimit,
+    DataGridCommand.SetSort,
+    DataGridCommand.SetOrder,
+    DataGridCommand.ToggleOrder,
+    DataGridCommand.ReplaceFilter,
+    DataGridCommand.ClearFilter,
+    DataGridCommand.ClearOrder,
+    DataGridCommand.ClearSort,
+  ]);
+
+  // Determine if the page number should be reset.
+  const shouldResetPage = action.commands.some(cmd => pageResettingCommands.has(cmd));
+
+  // Handle each command to update the state accordingly.
+  action.commands.forEach(command => {
+    switch (command) {
+      case DataGridCommand.SetPage: {
+        clone.page = action.page;
+        break;
+      }
+      case DataGridCommand.SetLimit: {
+        clone.limit = action.limit;
+        break;
+      }
+      case DataGridCommand.SetSort: {
+        clone.sort = action.sort;
+        break;
+      }
+      case DataGridCommand.SetOrder:
+      case DataGridCommand.ToggleOrder: {
+        clone.order = action.order;
+        break;
+      }
+      case DataGridCommand.SetFilter:
+      case DataGridCommand.RemoveFilter: {
+        clone.filter = { ...clone.filter, ...action.filter };
+        break;
+      }
+      case DataGridCommand.ReplaceFilter: {
+        clone.filter = action.filter;
+        break;
+      }
+      case DataGridCommand.ClearFilter: {
+        clone.filter = {};
+        break;
+      }
+      case DataGridCommand.ClearOrder: {
+        clone.order = null;
+        break;
+      }
+      case DataGridCommand.ClearSort: {
+        clone.sort = null;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  });
+
   if (shouldResetPage) {
-    clone.page = action.page; // Assumes the initial page is passed in the action
+    clone.page = action.page;
   }
 
   return clone;

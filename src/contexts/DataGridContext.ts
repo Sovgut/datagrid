@@ -8,6 +8,8 @@ import type {
   IPaginable,
   ISortable,
 } from "../types";
+import { DataGridCommand } from "../enums";
+import { DataGridState } from "../main";
 
 /**
  * Represents the complete, resolved state provided by the `DataGridContext`.
@@ -31,6 +33,8 @@ export interface DataGridContextState
 
   /** An optional callback function triggered when any part of the grid's query state (page, sort, filter) changes. */
   onChange?: (details: DataGridChangeDetails) => void;
+
+  setCommands: (commands: DataGridCommand[], payload: Partial<DataGridState>) => void;
 }
 
 /**

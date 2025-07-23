@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from "react";
 import type {
@@ -16,7 +17,7 @@ import type {
   IOrder,
   ISort,
 } from "./types";
-import { DataGridContext } from "./contexts/DataGridContext";
+import { DataGridContext, DataGridContextState } from "./contexts/DataGridContext";
 import {
   DEFAULT_FILTER,
   DEFAULT_LIMIT,
@@ -32,6 +33,7 @@ import { DataGridCommand } from "./enums";
 import { debounce } from "./utils/debounce";
 import { extractChangedKey } from "./utils/extractChangedKey";
 import { useDataGridMerge } from "./hooks/useDataGridMerge";
+import { DataGridState } from "./main";
 
 /**
  * Defines props for setting the initial, uncontrolled state of the DataGrid.
@@ -147,10 +149,17 @@ export function DataGrid(props: DataGridProps) {
   const hasPrevPage = useCallback(() => (state.page ?? initialPage) > 1, [state.page, initialPage]);
   const prevFilter = useRef(state.filter);
 
+  const setCommands = useCallback((commands: DataGridCommand[], payload: Partial<DataGridState>) => {
+    dispatch({
+      commands,
+      ...payload
+    })
+  }, [dispatch])
+
   /** Navigates to a specific page number. */
   const setPage = useCallback((page: number) => {
     dispatch({
-      command: DataGridCommand.SetPage,
+      commands: [DataGridCommand.SetPage],
       page,
     });
   }, [dispatch]);
@@ -172,7 +181,7 @@ export function DataGrid(props: DataGridProps) {
   /** Sets the number of items per page, optionally resetting to the first page. */
   const setLimit = useCallback((limit: number) => {
     dispatch({
-      command: DataGridCommand.SetLimit,
+      commands: [DataGridCommand.SetLimit],
       limit,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -181,7 +190,7 @@ export function DataGrid(props: DataGridProps) {
   /** Sets the active sort column, optionally resetting to the first page. */
   const setSort = useCallback((sort: string) => {
     dispatch({
-      command: DataGridCommand.SetSort,
+      commands: [DataGridCommand.SetSort],
       sort,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -190,7 +199,7 @@ export function DataGrid(props: DataGridProps) {
   /** Clears the active sort column, optionally resetting to the first page. */
   const clearSort = useCallback(() => {
     dispatch({
-      command: DataGridCommand.ClearSort,
+      commands: [DataGridCommand.ClearSort],
       sort: null,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -199,7 +208,7 @@ export function DataGrid(props: DataGridProps) {
   /** Explicitly sets the sort order ('asc' or 'desc'), optionally resetting to the first page. */
   const setOrder = useCallback((order: IOrder) => {
     dispatch({
-      command: DataGridCommand.SetOrder,
+      commands: [DataGridCommand.SetOrder],
       order,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -208,8 +217,9 @@ export function DataGrid(props: DataGridProps) {
   /** Cycles through sort orders (asc -> desc -> none), optionally resetting to the first page. */
   const toggleOrder = useCallback(() => {
     const nextOrder = state.order === SORT_ASC ? SORT_DESC : state.order === SORT_DESC ? null : SORT_ASC;
+
     dispatch({
-      command: DataGridCommand.ToggleOrder,
+      commands: [DataGridCommand.ToggleOrder],
       order: nextOrder,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -218,7 +228,7 @@ export function DataGrid(props: DataGridProps) {
   /** Clears the sort order, optionally resetting to the first page. */
   const clearOrder = useCallback(() => {
     dispatch({
-      command: DataGridCommand.ClearOrder,
+      commands: [DataGridCommand.ClearOrder],
       order: null,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -227,7 +237,7 @@ export function DataGrid(props: DataGridProps) {
   /** Clears the state. */
   const clear = useCallback(() => {
     dispatch({
-      command: DataGridCommand.ClearAll,
+      commands: [DataGridCommand.ClearAll],
       order: DEFAULT_ORDER,
       sort: DEFAULT_SORT,
       page: DEFAULT_PAGE,
@@ -239,7 +249,7 @@ export function DataGrid(props: DataGridProps) {
   /** Sets or updates a single filter value by its key, optionally resetting to the first page. */
   const setFilter = useCallback((key: string, value: unknown) => {
     dispatch({
-      command: DataGridCommand.SetFilter,
+      commands: [DataGridCommand.SetFilter],
       filter: { [key]: value },
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -248,7 +258,7 @@ export function DataGrid(props: DataGridProps) {
   /** Removes a single filter by its key. */
   const removeFilter = useCallback((key: string) => {
     dispatch({
-      command: DataGridCommand.RemoveFilter,
+      commands: [DataGridCommand.RemoveFilter],
       filter: { [key]: undefined },
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -257,7 +267,7 @@ export function DataGrid(props: DataGridProps) {
   /** Replaces the entire filter object with a new one. */
   const replaceFilter = useCallback((value: Record<string, unknown>) => {
     dispatch({
-      command: DataGridCommand.ReplaceFilter,
+      commands: [DataGridCommand.ReplaceFilter],
       filter: value,
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
@@ -266,7 +276,7 @@ export function DataGrid(props: DataGridProps) {
   /** Clears all active filters, returning to an empty filter state. */
   const clearFilter = useCallback(() => {
     dispatch({
-      command: DataGridCommand.ClearFilter,
+      commands: [DataGridCommand.ClearFilter],
       page: resetPageOnQueryChange ? initialPage : state.page,
     });
   }, [dispatch, initialPage, resetPageOnQueryChange, state.page]);
@@ -291,7 +301,7 @@ export function DataGrid(props: DataGridProps) {
     }
 
     // If a filter has changed, check if its column has a debounce configuration.
-    if (!Object.is(prevFilter.current, details.filter) && state.command === DataGridCommand.SetFilter) {
+    if (!Object.is(prevFilter.current, details.filter) && state.commands?.includes(DataGridCommand.SetFilter)) {
       const changedKey = extractChangedKey([prevFilter.current, details.filter]);
 
       if (changedKey) {
@@ -314,22 +324,72 @@ export function DataGrid(props: DataGridProps) {
   // This hook exposes the grid's action methods on the `ref` object for imperative control by parent components.
   useImperativeHandle(ref, () => ({ setPage, setLimit, setSort, setOrder, setFilter, replaceFilter, removeFilter, clear, clearFilter, hasNextPage, hasPrevPage, nextPage, prevPage, clearOrder, clearSort, toggleOrder }));
 
+  const contextValue = useMemo<DataGridContextState>(() => ({
+    page: state.page ?? initialPage,
+    limit: state.limit ?? initialLimit,
+    sort: state.sort ?? initialSort,
+    order: state.order ?? initialOrder,
+    filter: state.filter ?? initialFilter,
+    setPage,
+    setLimit,
+    setSort,
+    setOrder,
+    setFilter,
+    replaceFilter,
+    removeFilter,
+    clearFilter,
+    hasNextPage,
+    hasPrevPage,
+    nextPage,
+    prevPage,
+    clearOrder,
+    clearSort,
+    toggleOrder,
+    setCommands,
+    loading: loading ?? false,
+    pending: pending ?? false,
+    columns,
+    rows,
+    size,
+    onChange,
+  }), [
+    clearFilter,
+    clearOrder,
+    clearSort,
+    columns,
+    hasNextPage,
+    hasPrevPage,
+    initialFilter,
+    initialLimit,
+    initialOrder,
+    initialPage,
+    initialSort,
+    loading,
+    nextPage,
+    onChange,
+    pending,
+    prevPage,
+    removeFilter,
+    replaceFilter,
+    rows,
+    setCommands,
+    setFilter,
+    setLimit,
+    setOrder,
+    setPage,
+    setSort,
+    size,
+    state.filter,
+    state.limit,
+    state.order,
+    state.page,
+    state.sort,
+    toggleOrder
+  ])
+
   // The component provides all resolved state and actions to its children via the DataGridContext.Provider.
   return (
-    <DataGridContext.Provider
-      value={{
-        page: state.page ?? initialPage,
-        limit: state.limit ?? initialLimit,
-        sort: state.sort ?? initialSort,
-        order: state.order ?? initialOrder,
-        filter: state.filter ?? initialFilter,
-        setPage, setLimit, setSort, setOrder, setFilter, replaceFilter, removeFilter, clearFilter,
-        hasNextPage, hasPrevPage, nextPage, prevPage, clearOrder, clearSort, toggleOrder,
-        loading: loading ?? false,
-        pending: pending ?? false,
-        columns, rows, size, onChange,
-      }}
-    >
+    <DataGridContext.Provider value={contextValue}>
       {children}
     </DataGridContext.Provider>
   );
