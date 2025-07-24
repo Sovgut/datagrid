@@ -1,9 +1,9 @@
 import { useRef } from "react";
 
-import { DataGridProps, DataSource } from "./DataSource";
-import { DataGridRow } from "./main";
-import { createDataGridStore, DataGridState } from "./store/store";
-import { DataGridStoreContext } from "./store/context";
+import { DataSource, type DataGridProps } from "./DataSource.ts";
+import { createDataGridStore, type DataGridState } from "./store/store.ts";
+import { DataGridStoreContext } from "./store/context.ts";
+import type { DataGridRow } from "./types.ts";
 
 /**
  * Defines the properties for the top-level DataGrid component, extending
