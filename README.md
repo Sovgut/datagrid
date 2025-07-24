@@ -7,7 +7,7 @@ A powerful, flexible, and headless data grid solution for React applications. It
 
 ## Key Features
 
-- headless **Headless & Unstyled** - Provides the hooks and logic, you provide the UI components.
+- 🏭 **Headless & Unstyled** - Provides the hooks and logic, you provide the UI components.
 - 💪 **TypeScript Ready** - Fully typed API to ensure type safety and excellent editor support.
 - 🪝 **Hook-Based API** - Use the `useDataGrid` hook to easily access state and actions anywhere in your table.
 - 📄 **Pagination** - Built-in state for page and limit management.
