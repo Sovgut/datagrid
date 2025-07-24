@@ -1,11 +1,3 @@
-Of course. Based on the refactored code and its new API, I've created a comprehensive and accurate `README.md` file.
-
-This new version corrects the usage examples, updates the feature list, and adds high-level API documentation to properly reflect the library's current state.
-
-Here is the file content:
-
----
-
 # React DataGrid
 
 A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.
