@@ -1,18 +1,8 @@
-export { DataGrid, type DataGridProps } from "./DataGrid.tsx";
-export { useSharedDataGrid as useSharedDataGrid } from "./hooks/useSharedDataGridContext.ts";
-export { useDataGrid } from "./hooks/useDataGrid.ts";
+export { useDataGrid } from "./internal/hook.ts";
+export { DataGrid } from "./DataGrid.tsx";
 
-export type {
-  DataGridColumn,
-  DataGridRow,
-  DataGridChangeDetails,
-  DataGridRef,
-  SharedDataGridContext,
-} from "./types.ts";
+export type { DataGridColumn, DataGridRow, DataGridRef } from "./types.ts";
+export type { DataGridReducer, DataGridState } from "./store/store.ts";
 
-export type {
-  DataGridAction,
-  DataGridState,
-} from "./reducer/DataGridReducer.ts";
-
-export { DataGridCommand, DataGridColumnVisibility } from "./enums.ts";
+export * from "./constants.ts";
+export * from "./enums.ts";

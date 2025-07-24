@@ -1,23 +1,45 @@
-/** The default page number to start pagination from when the grid first loads. */
-export const DEFAULT_PAGE = 1;
+/**
+ * The default page number for pagination. @default 1
+ */
+export const DATAGRID_DEFAULT_PAGE = 1;
 
-/** The default number of items to display per page if not otherwise specified. */
-export const DEFAULT_LIMIT = 10;
+/**
+ * The default number of items per page. @default 10
+ */
+export const DATAGRID_DEFAULT_LIMIT = 10;
 
-/** The default sort column, where `null` signifies no column is sorted initially. */
-export const DEFAULT_SORT = null;
+/**
+ * The default sort key. @default null
+ */
+export const DATAGRID_DEFAULT_SORT = null;
 
-/** The default sort order, where `null` signifies no sort direction is applied initially. */
-export const DEFAULT_ORDER = null;
+/**
+ * The default sort order. @default null
+ */
+export const DATAGRID_DEFAULT_ORDER = null;
 
-/** The default filter state, which is an empty object indicating no active filters. */
-export const DEFAULT_FILTER = {};
+/**
+ * The default filter object. @default {}
+ */
+export const DATAGRID_DEFAULT_FILTER = {};
 
-/** The string identifier for ascending sort order. */
-export const SORT_ASC = "asc";
+/**
+ * The default selection array. @default []
+ */
+export const DATAGRID_DEFAULT_SELECTED = [];
 
-/** The string identifier for descending sort order. */
-export const SORT_DESC = "desc";
+/**
+ * Constant for ascending sort order.
+ */
+export const DATAGRID_SORT_ASC = "asc";
 
-/** A configuration flag that, if true, resets the page number to its initial value whenever filters or sorting criteria are changed. */
-export const RESET_PAGE_ON_QUERY_CHANGE = true;
+/**
+ * Constant for descending sort order.
+ */
+export const DATAGRID_SORT_DESC = "desc";
+
+/**
+ * The default setting for whether to reset the page on query changes.
+ * @default true
+ */
+export const DATAGRID_RESET_PAGE_ON_QUERY_CHANGE = true;
