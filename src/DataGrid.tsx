@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { DataSource, type DataGridProps } from "./DataSource.ts";
+import { DataSource, type DataGridProps } from "./DataSource.tsx";
 import { createDataGridStore, type DataGridState } from "./store/store.ts";
 import { DataGridStoreContext } from "./store/context.ts";
 import type { DataGridRow } from "./types.ts";
