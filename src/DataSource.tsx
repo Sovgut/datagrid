@@ -190,8 +190,8 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     setPagination: onInternalSetPage,
     setSorting: onInternalSetSort,
     setFilter: onInternalSetFilter,
-    loading,
-    pending,
+    loading: loading ?? false,
+    pending: pending ?? false,
     clear,
   }));
 
@@ -209,9 +209,9 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       setFilter: onInternalSetFilter,
       loading: loading ?? false,
       pending: pending ?? false,
-      columns,
-      rows,
-      size,
+      columns: columns ?? [],
+      rows: rows ?? [],
+      size: size ?? 0,
     }),
     [
       columns,
