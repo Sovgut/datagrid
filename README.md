@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/github/license/sovgut/datagrid" alt="license" />
   <img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
 </p>
-r
+
 ## Key Features
 
 - 🏭 **Headless & Unstyled** - Provides the hooks and logic, you provide the UI components.
