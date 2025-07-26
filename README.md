@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/github/license/sovgut/datagrid" alt="license" />
   <img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
 </p>
-
+r
 ## Key Features
 
 - 🏭 **Headless & Unstyled** - Provides the hooks and logic, you provide the UI components.
@@ -150,8 +150,6 @@ const columns: DataGridColumn[] = [
     render: (row) => <strong>{row.name}</strong>,
     // Provide a JSX element to act as a filter
     filter: <input type="text" placeholder="Filter by name..." />,
-    // Debounce filter input changes by 300ms
-    debounce: 300,
   },
   {
     key: "status",
@@ -247,7 +245,6 @@ function RefExample() {
 | `render`    | `(row: TData, ...) => ReactNode`               | A function to render custom content for a cell.                                   |
 | `component` | `ComponentType<DataGridComponentProps<TData>>` | A React component to render for the cell. Alternative to `render`.                |
 | `filter`    | `ReactElement`                                 | A React element (e.g., `<input>`, `<select>`) to use as a filter for this column. |
-| `debounce`  | `number`                                       | Debounce time in milliseconds for filter changes.                                 |
 | `multiple`  | `boolean`                                      | Indicates if the filter for this column can accept multiple values.               |
 | `metadata`  | `Record<string, any>`                          | A place to store any other custom data you need for the column.                   |
 
