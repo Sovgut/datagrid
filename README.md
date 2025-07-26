@@ -19,7 +19,6 @@
 - 📄 **Pagination** - Built-in state for page and limit management.
 - 📊 **Single-Column Sorting** - Simple and efficient single-column sorting logic.
 - 🔍 **Filtering Support** - Define custom filter elements on a per-column basis.
-- ⌛ **Debounce Support** - Column-level debounce configuration for filter operations.
 - 🔌 **Flexible State Management** - Use the powerful internal Zustand store or provide your own external store.
 - 🕹️ **Imperative API** - Use a `ref` to programmatically control the grid's state from a parent component.
 
