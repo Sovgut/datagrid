@@ -1,9 +1,15 @@
-# React DataGrid
+# @sovgut/datagrid
 
-A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.
+<p align="center">
+  <b>A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.</b>
+</p>
 
-> [\!NOTE]
-> This package provides only the logic and state management for data grids. It is **headless** and **unstyled** by design. You bring your own components and styles to create the final UI, giving you complete control over the look and feel.
+<p align="center">
+  <img src="https://img.shields.io/npm/v/@sovgut/datagrid" alt="npm version" />
+  <img src="https://img.shields.io/npm/dm/@sovgut/datagrid" alt="npm downloads" />
+  <img src="https://img.shields.io/github/license/sovgut/datagrid" alt="license" />
+  <img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
+</p>
 
 ## Key Features
 
@@ -16,6 +22,9 @@ A powerful, flexible, and headless data grid solution for React applications. It
 - ⌛ **Debounce Support** - Column-level debounce configuration for filter operations.
 - 🔌 **Flexible State Management** - Use the powerful internal Zustand store or provide your own external store.
 - 🕹️ **Imperative API** - Use a `ref` to programmatically control the grid's state from a parent component.
+
+> [\!NOTE]
+> This package provides only the logic and state management for data grids. It is **headless** and **unstyled** by design. You bring your own components and styles to create the final UI, giving you complete control over the look and feel.
 
 ---
 
