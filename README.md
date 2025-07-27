@@ -250,7 +250,7 @@ function RefExample() {
 
 ## License
 
-MIT
+[MIT](./LICENSE)
 
 ## Contributing
 
