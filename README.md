@@ -1,7 +1,7 @@
 # @sovgut/datagrid
 
 <p align="center">
-  <b>A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.</b>
+  A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.
 </p>
 
 <p align="center">
