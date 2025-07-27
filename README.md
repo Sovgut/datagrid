@@ -221,19 +221,17 @@ function RefExample() {
 
 ### DataGrid Props
 
-| Prop                     | Type                             | Description                                                                                              |
-| ------------------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `columns`                | `DataGridColumn<TData>[]`        | **Required.** An array of column definition objects.                                                     |
-| `rows`                   | `DataGridRow[]`                  | **Required.** The array of data to display. Each object must have a unique `id`.                         |
-| `size`                   | `number`                         | **Required.** The total number of items available, used for pagination.                                  |
-| `query`                  | `Partial<DataGridState>`         | An object to set the initial state of the grid (page, limit, sort, etc.).                                |
-| `store`                  | `DataGridReducer`                | An external store to control the grid's state completely.                                                |
-| `ref`                    | `Ref<DataGridRef>`               | A ref to imperatively control the grid's state.                                                          |
-| `onChange`               | `(state: DataGridState) => void` | A callback fired whenever the grid's state changes.                                                      |
-| `onSelect`               | `(selected: string[]) => void`   | A callback fired when row selection changes.                                                             |
-| `resetPageOnQueryChange` | `boolean`                        | If `true`, resets to page 1 when sorting or filtering changes. Defaults to `true`.                       |
-| `loading`                | `boolean`                        | A flag to indicate a primary data fetch is in progress. Passed down through `useDataGrid`.               |
-| `pending`                | `boolean`                        | A flag to indicate a background update (like sorting) is in progress. Passed down through `useDataGrid`. |
+| Prop                     | Type                             | Description                                                                        |
+| ------------------------ | -------------------------------- | ---------------------------------------------------------------------------------- |
+| `columns`                | `DataGridColumn<TData>[]`        | **Required.** An array of column definition objects.                               |
+| `rows`                   | `DataGridRow[]`                  | **Required.** The array of data to display. Each object must have a unique `id`.   |
+| `size`                   | `number`                         | **Required.** The total number of items available, used for pagination.            |
+| `query`                  | `Partial<DataGridState>`         | An object to set the initial state of the grid (page, limit, sort, etc.).          |
+| `store`                  | `DataGridReducer`                | An external store to control the grid's state completely.                          |
+| `ref`                    | `Ref<DataGridRef>`               | A ref to imperatively control the grid's state.                                    |
+| `onChange`               | `(state: DataGridState) => void` | A callback fired whenever the grid's state changes.                                |
+| `onSelect`               | `(selected: string[]) => void`   | A callback fired when row selection changes.                                       |
+| `resetPageOnQueryChange` | `boolean`                        | If `true`, resets to page 1 when sorting or filtering changes. Defaults to `true`. |
 
 ### DataGridColumn Properties
 

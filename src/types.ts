@@ -17,23 +17,6 @@ export type ExpectedAny = any;
 export type Nullable<T> = T | Nullish;
 
 /**
- * Defines the shape for loading state indicators within the DataGrid.
- */
-export interface DataGridLoadingState {
-  /**
-   * Indicates that the grid is waiting for a response from an initial
-   * or primary data fetch.
-   */
-  loading?: boolean;
-
-  /**
-   * Indicates that a background operation is in progress, such as
-   * sorting or filtering, while stale data may still be visible.
-   */
-  pending?: boolean;
-}
-
-/**
  * Defines the required structure for a row of data in the grid.
  * Each row must have a unique `id`.
  */

@@ -12,7 +12,7 @@ import {
 import { useDataGridState } from "./internal/hook.ts";
 import { InternalDataGridContext, type InternalDataGridContextType } from "./internal/context.ts";
 import type { DataGridState, DataGridReducer } from "./store/store.ts";
-import type { DataGridColumn, DataGridRef, DataGridLoadingState, DataGridRow } from "./types.ts";
+import type { DataGridColumn, DataGridRef, DataGridRow } from "./types.ts";
 
 /**
  * Defines configuration for how the grid's page state should behave
@@ -32,7 +32,7 @@ export interface DataGridResetProps {
  * Defines the core properties for the data handling and rendering layer
  * of the DataGrid. It accepts data, column definitions, and state callbacks.
  */
-export interface DataGridProps<TData> extends DataGridLoadingState, DataGridResetProps, PropsWithChildren {
+export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChildren {
   /**
    * An array of column definition objects that specify how the grid's
    * header and cells should be rendered and behave.
@@ -84,8 +84,6 @@ export interface DataGridProps<TData> extends DataGridLoadingState, DataGridRese
 export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData>) {
   const {
     resetPageOnQueryChange = DATAGRID_RESET_PAGE_ON_QUERY_CHANGE,
-    loading = false,
-    pending = false,
     columns = [],
     rows = [],
     size = 0,
@@ -231,8 +229,6 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     setSorting: onInternalSetSort,
     setFilter: onInternalSetFilter,
     setState: onInternalSetState,
-    loading: loading ?? false,
-    pending: pending ?? false,
     clear,
   }));
 
@@ -249,16 +245,12 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       setSorting: onInternalSetSort,
       setFilter: onInternalSetFilter,
       setState: onInternalSetState,
-      loading: loading ?? false,
-      pending: pending ?? false,
       columns: columns ?? [],
       rows: rows ?? [],
       size: size ?? 0,
     }),
     [
       columns,
-      loading,
-      pending,
       rows,
       selected,
       onInternalSetFilter,
