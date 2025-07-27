@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-import type { DataGridColumn, DataGridLoadingState, DataGridRow, ExpectedAny, Nullable } from "../types.ts";
+import type { DataGridColumn, DataGridRow, ExpectedAny, Nullable } from "../types.ts";
 import type { DataGridReducer } from "../store/store.ts";
 
 /**
@@ -30,9 +30,7 @@ interface InternalDataGridData<TData> {
  * DataSource component. It consolidates the state reducer, loading state,
  * and core data (columns, rows, size) into a single, nullable object.
  */
-export type InternalDataGridContextType<TData> = Nullable<
-  DataGridReducer & DataGridLoadingState & InternalDataGridData<TData>
->;
+export type InternalDataGridContextType<TData> = Nullable<DataGridReducer & InternalDataGridData<TData>>;
 
 /**
  * The internal React context used to pass all grid data and actions
