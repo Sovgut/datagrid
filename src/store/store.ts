@@ -78,6 +78,11 @@ export interface DataGridReducer extends DataGridState {
    * Sets the selection state.
    */
   setSelected: (selected: DataGridState["selected"]) => void;
+
+  /**
+   * Sets the entire state
+   */
+  setState: (state: DataGridState) => void;
 }
 
 /**
@@ -107,6 +112,7 @@ export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>)
       })),
     setFilter: (filter) => set(() => ({ filter })),
     setSelected: (selected) => set(() => ({ selected })),
+    setState: (state) => set((oldState) => ({ ...oldState, ...state })),
   }));
 };
 

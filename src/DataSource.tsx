@@ -96,12 +96,18 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     onSelect,
   } = props;
 
-  const { page, limit, setPagination, sort, order, setSorting, filter, setFilter, selected, setSelected } =
-    useDataGridState(store);
+  const { page, limit, sort, order, filter, selected, setState } = useDataGridState(store);
 
   const onInternalSetPage: DataGridReducer["setPagination"] = useCallback(
     (page, limit) => {
-      setPagination(page, limit);
+      setState({
+        page,
+        limit,
+        sort,
+        order,
+        filter,
+        selected,
+      });
 
       onChange?.({
         page,
@@ -112,15 +118,21 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
         selected,
       });
     },
-    [setPagination, onChange, sort, order, filter, selected]
+    [setState, onChange, sort, order, filter, selected]
   );
 
   const onInternalSetSort: DataGridReducer["setSorting"] = useCallback(
     (sort, order) => {
       const newPage = resetPageOnQueryChange ? DATAGRID_DEFAULT_PAGE : page;
 
-      setSorting(sort, order);
-      setPagination(newPage, limit);
+      setState({
+        page: newPage,
+        limit,
+        sort,
+        order,
+        filter,
+        selected,
+      });
 
       onChange?.({
         page: newPage,
@@ -131,15 +143,21 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
         selected,
       });
     },
-    [setSorting, setPagination, page, onChange, limit, filter, resetPageOnQueryChange, selected]
+    [setState, page, onChange, limit, filter, resetPageOnQueryChange, selected]
   );
 
   const onInternalSetFilter: DataGridReducer["setFilter"] = useCallback(
     (filter) => {
       const newPage = resetPageOnQueryChange ? DATAGRID_DEFAULT_PAGE : page;
 
-      setFilter(filter ?? DATAGRID_DEFAULT_FILTER);
-      setPagination(newPage, limit);
+      setState({
+        page: newPage,
+        limit,
+        sort,
+        order,
+        filter: filter ?? DATAGRID_DEFAULT_FILTER,
+        selected,
+      });
 
       onChange?.({
         page: newPage,
@@ -150,22 +168,44 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
         selected,
       });
     },
-    [onChange, setPagination, resetPageOnQueryChange, page, setFilter, limit, sort, order, selected]
+    [onChange, setState, resetPageOnQueryChange, page, limit, sort, order, selected]
   );
 
   const onInternalSetSelected: DataGridReducer["setSelected"] = useCallback(
     (selected) => {
-      setSelected(selected ?? DATAGRID_DEFAULT_SELECTED);
+      setState({
+        page,
+        limit,
+        sort,
+        order,
+        filter,
+        selected: selected ?? DATAGRID_DEFAULT_SELECTED,
+      });
+
       onSelect?.(selected ?? DATAGRID_DEFAULT_SELECTED);
     },
-    [setSelected, onSelect]
+    [setState, onSelect, page, limit, sort, order, filter]
+  );
+
+  const onInternalSetState: DataGridReducer["setState"] = useCallback(
+    (state) => {
+      setState(state);
+
+      onChange?.(state);
+      onSelect?.(state.selected);
+    },
+    [setState, onChange, onSelect]
   );
 
   const clear = useCallback(() => {
-    setPagination(DATAGRID_DEFAULT_PAGE, DATAGRID_DEFAULT_LIMIT);
-    setSorting(DATAGRID_DEFAULT_SORT, DATAGRID_DEFAULT_ORDER);
-    setFilter(DATAGRID_DEFAULT_FILTER);
-    setSelected(DATAGRID_DEFAULT_SELECTED);
+    setState({
+      page: DATAGRID_DEFAULT_PAGE,
+      limit: DATAGRID_DEFAULT_LIMIT,
+      sort: DATAGRID_DEFAULT_SORT,
+      order: DATAGRID_DEFAULT_ORDER,
+      filter: DATAGRID_DEFAULT_FILTER,
+      selected: DATAGRID_DEFAULT_SELECTED,
+    });
 
     onChange?.({
       page: DATAGRID_DEFAULT_PAGE,
@@ -177,7 +217,7 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     });
 
     onSelect?.(DATAGRID_DEFAULT_SELECTED);
-  }, [setPagination, setSorting, setFilter, setSelected, onChange, onSelect]);
+  }, [setState, onChange, onSelect]);
 
   useImperativeHandle(ref, () => ({
     page: page ?? DATAGRID_DEFAULT_PAGE,
@@ -190,6 +230,7 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     setPagination: onInternalSetPage,
     setSorting: onInternalSetSort,
     setFilter: onInternalSetFilter,
+    setState: onInternalSetState,
     loading: loading ?? false,
     pending: pending ?? false,
     clear,
@@ -207,6 +248,7 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       setPagination: onInternalSetPage,
       setSorting: onInternalSetSort,
       setFilter: onInternalSetFilter,
+      setState: onInternalSetState,
       loading: loading ?? false,
       pending: pending ?? false,
       columns: columns ?? [],
@@ -223,6 +265,7 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       onInternalSetPage,
       onInternalSetSort,
       onInternalSetSelected,
+      onInternalSetState,
       size,
       filter,
       limit,
