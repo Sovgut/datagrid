@@ -1,53 +1,59 @@
 # @sovgut/datagrid
 
 <p align="center">
-  A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.
+A powerful, flexible, and headless data grid solution for React applications. It provides the logic, state management, and hooks needed to build highly custom and type-safe data grids.
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/npm/v/@sovgut/datagrid" alt="npm version" />
-  <img src="https://img.shields.io/npm/dm/@sovgut/datagrid" alt="npm downloads" />
-  <img src="https://img.shields.io/github/license/sovgut/datagrid" alt="license" />
-  <img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
+<img src="https://img.shields.io/npm/v/@sovgut/datagrid" alt="npm version" />
+<img src="https://img.shields.io/npm/dm/@sovgut/datagrid" alt="npm downloads" />
+<img src="https://img.shields.io/github/license/sovgut/datagrid" alt="license" />
+<img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
 </p>
 
 ## Key Features
 
 - 🏭 **Headless & Unstyled** - Provides the hooks and logic, you provide the UI components.
+
 - 💪 **TypeScript Ready** - Fully typed API to ensure type safety and excellent editor support.
+
 - 🪝 **Hook-Based API** - Use the `useDataGrid` hook to easily access state and actions anywhere in your table.
+
 - 📄 **Pagination** - Built-in state for page and limit management.
+
 - 📊 **Single-Column Sorting** - Simple and efficient single-column sorting logic.
+
 - 🔍 **Filtering Support** - Define custom filter elements on a per-column basis.
+
+- 🚀 **Advanced Filtering** - Define complex filter interactions, including dynamic props (`deriveProps`) and state synchronization (`deriveState`), via `filterConfig`.
+
 - 🔌 **Flexible State Management** - Use the powerful internal Zustand store or provide your own external store.
+
 - 🕹️ **Imperative API** - Use a `ref` to programmatically control the grid's state from a parent component.
 
-> [\!NOTE]
+> \[!NOTE\]
 > This package provides only the logic and state management for data grids. It is **headless** and **unstyled** by design. You bring your own components and styles to create the final UI, giving you complete control over the look and feel.
-
----
 
 ## Installation
 
-```bash
+```
 npm install @sovgut/datagrid
 # or
 yarn add @sovgut/datagrid
 # or
 pnpm add @sovgut/datagrid
-```
 
----
+```
 
 ## Core Concepts
 
 This library is built around three core concepts:
 
-1.  **`<DataGrid />` Component**: This is the context provider. You wrap your custom table components with `<DataGrid>` and pass it your `columns`, `rows`, and total `size`.
-2.  **`useDataGrid()` Hook**: This is the consumer. Call this hook within any child of `<DataGrid>` to get access to the grid's state (`page`, `limit`, `sort`, `filter`), the processed data (`rows`, `columns`), and action dispatchers (`setPagination`, `setSorting`, `setFilter`).
-3.  **Column Definitions**: You define your grid's structure by passing an array of `DataGridColumn` objects. Here you specify keys, labels, and behavior like sorting, filtering, and custom rendering.
+1. **`<DataGrid />` Component**: This is the context provider. You wrap your custom table components with `<DataGrid>` and pass it your `columns`, `rows`, and total `size`.
 
----
+2. **`useDataGrid()` Hook**: This is the consumer. Call this hook within any child of `<DataGrid>` to get access to the grid's state (`page`, `limit`, `sort`, `filter`), the processed data (`rows`, `columns`), and action dispatchers (`setPagination`, `setSorting`, `setFilter`).
+
+3. **Column Definitions**: You define your grid's structure by passing an array of `DataGridColumn` objects. Here you specify keys, labels, and behavior like sorting, filtering, and custom rendering.
 
 ## Basic Usage
 
@@ -128,13 +134,12 @@ export function SimpleExample() {
     </DataGrid>
   );
 }
-```
 
----
+```
 
 ## Advanced Usage
 
-### Custom Rendering and Filtering
+### Custom Rendering and Basic Filtering
 
 Provide a `render` function for custom cell content and a React element to the `filter` property. Use the `query` prop to set the initial state.
 
@@ -179,7 +184,66 @@ function AdvancedExample() {
     </DataGrid>
   );
 }
+
 ```
+
+### Advanced Filtering with `filterConfig`
+
+For complex scenarios, like dependent filters, you can use the `filterConfig` property. This allows you to define functions to dynamically derive props for your filter component (`deriveProps`) and to synchronize the filter state (`deriveState`).
+
+```tsx
+// Example: A 'Method' filter that depends on a 'Currency' filter
+const allMethods = [
+  { id: 1, name: "Credit Card", currency: "USD" },
+  { id: 2, name: "Bank Transfer", currency: "USD" },
+  { id: 3, name: "PayPal", currency: "EUR" },
+];
+
+const columns: DataGridColumn<Transaction>[] = [
+  {
+    key: "currency",
+    label: "Currency",
+    filter: <Select items={allCurrencies} />,
+  },
+  {
+    key: "method",
+    label: "Method",
+    filter: <Select items={allMethods} />,
+    filterConfig: {
+      deriveProps: (props, state) => {
+        const { currency } = state.filter;
+        if (!currency) {
+          return { ...props, items: [], disabled: true };
+        }
+        const filteredMethods = allMethods.filter(m => m.currency === currency);
+        return { ...props, items: filteredMethods };
+      },
+      deriveState: (state) => {
+        const { currency, method } = state.filter;
+        if (currency && method) {
+          const methodIsValid = allMethods.some(m => m.id === method && m.currency === currency);
+          if (!methodIsValid) {
+            const newFilterState = { ...state.filter, method: undefined };
+            return { ...state, filter: newFilterState };
+          }
+        }
+        return state;
+      }
+    }
+  }
+];
+
+```
+
+> ⚠️ **IMPORTANT: Implementation Responsibility**
+>
+> This package (`@sovgut/datagrid`) provides the **type definitions** and **data structure** for `filterConfig` `deriveProps` as a convention.
+>
+> **The package itself does NOT implement the handler logic for these functions.**
+>
+> You, as the developer using this package, are responsible for implementing the logic in your custom `DataGrid` component that:
+>
+> **Handles `deriveProps`:** Calls this function during your render phase and merges the resulting props with the `filter` element (e.g., using `React.cloneElement`).
 
 ### Imperative Control with `ref`
 
@@ -213,16 +277,15 @@ function RefExample() {
     </div>
   );
 }
-```
 
----
+```
 
 ## API Reference
 
 ### DataGrid Props
 
 | Prop                     | Type                             | Description                                                                        |
-| ------------------------ | -------------------------------- | ---------------------------------------------------------------------------------- |
+|--------------------------|----------------------------------|------------------------------------------------------------------------------------|
 | `columns`                | `DataGridColumn<TData>[]`        | **Required.** An array of column definition objects.                               |
 | `rows`                   | `DataGridRow[]`                  | **Required.** The array of data to display. Each object must have a unique `id`.   |
 | `size`                   | `number`                         | **Required.** The total number of items available, used for pagination.            |
@@ -235,23 +298,23 @@ function RefExample() {
 
 ### DataGridColumn Properties
 
-| Property    | Type                                           | Description                                                                       |
-| ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
-| `key`       | `keyof TData \| string`                        | **Required.** A unique key, usually matching a property in your data row object.  |
-| `label`     | `string`                                       | **Required.** The text to display in the column header.                           |
-| `sortable`  | `boolean`                                      | If `true`, enables sorting for this column.                                       |
-| `render`    | `(row: TData, ...) => ReactNode`               | A function to render custom content for a cell.                                   |
-| `component` | `ComponentType<DataGridComponentProps<TData>>` | A React component to render for the cell. Alternative to `render`.                |
-| `filter`    | `ReactElement`                                 | A React element (e.g., `<input>`, `<select>`) to use as a filter for this column. |
-| `multiple`  | `boolean`                                      | Indicates if the filter for this column can accept multiple values.               |
-| `metadata`  | `Record<string, any>`                          | A place to store any other custom data you need for the column.                   |
-
----
+| Property       | Type                                           | Description                                                                                                                     |
+|----------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `key`          | `keyof TData` \| `string`                      | **Required.** A unique key, usually matching a property in your data row object.                                                |
+| `label`        | `string`                                       | **Required.** The text to display in the column header.                                                                         |
+| `sortable`     | `boolean`                                      | If `true`, enables sorting for this column.                                                                                     |
+| `render`       | `(row: TData, ...) => ReactNode`               | A function to render custom content for a cell.                                                                                 |
+| `component`    | `ComponentType<DataGridComponentProps<TData>>` | A React component to render for the cell. Alternative to `render`.                                                              |
+| `filter`       | `ReactElement`                                 | A React element (e.g., `<input>`, `<select>`) to use as a filter for this column.                                               |
+| `filterConfig` | `ColumnFilterConfig`                           | An advanced configuration object for filters, enabling dynamic props (`deriveProps`) and state synchronization (`deriveState`). |
+| `visibility`   | `DataGridColumnVisibility`                     | Controls the visibility of the column. Defaults to `Visible`.                                                                   |
+| `multiple`     | `boolean`                                      | Indicates if the filter for this column can accept multiple values.                                                             |
+| `metadata`     | `Record<string, any>`                          | A place to store any other custom data you need for the column.                                                                 |
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](https://www.google.com/search?q=./LICENSE)
 
 ## Contributing
 
-Contributions are welcome\! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request.
