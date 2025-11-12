@@ -2,7 +2,7 @@ import type { ComponentType, ReactElement, ReactNode } from "react";
 import type { Nullish } from "utility-types";
 
 import type { DataGridColumnVisibility } from "./enums.ts";
-import type { DataGridReducer } from "./store/store.ts";
+import { DataGridReducer, DataGridState } from "./store/store.ts";
 
 /**
  * A utility type for situations where a value can be of any type.
@@ -50,6 +50,43 @@ export interface DataGridComponentProps<TData> {
 }
 
 /**
+ * Describes the full, advanced filter configuration for a single column.
+ */
+interface ColumnFilterConfig {
+  /**
+   * A pure function for describing dynamic prop generation for the `component`.
+   *
+   * This function runs *during the render phase* and is used to
+   * dynamically configure the filter's UI based on the current global filter state.
+   *
+   * The props returned from this function will be merged with the component's
+   * original props. The grid's internal `value` and `onChange` props
+   * will always take precedence.
+   *
+   * @param props - The component's original static props (from `component.props`).
+   * @param context - The current filter context, containing `filter` state.
+   * @returns An object of props to be merged into the `component`.
+   */
+  deriveProps?: (props: Readonly<Record<string, ExpectedAny>>, context: DataGridState) => Record<string, ExpectedAny>;
+
+  /**
+   * A function for describing derived state logic (state synchronization).
+   *
+   * This function runs *after render* (inside `useEffect`) and is used to
+   * validate or synchronize the filter state.
+   *
+   * **Note:** The DataGrid should pass a *deep clone* of the context to this
+   * function, allowing the function to safely mutate the context object
+   * to produce a new state.
+   *
+   * @param context - A *clone* of the current filter context.
+   * This function is allowed to mutate this object directly.
+   * @returns The (potentially mutated) context object.
+   */
+  deriveState?: (context: DataGridState) => DataGridState;
+}
+
+/**
  * Defines the core properties for a column in the DataGrid.
  */
 interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> {
@@ -75,6 +112,11 @@ interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> {
    * for this column.
    */
   filter?: ReactElement;
+
+  /**
+   * Describes the full, advanced filter configuration for a single column.
+   */
+  filterConfig?: ColumnFilterConfig;
 
   /**
    * Controls the visibility of the column.

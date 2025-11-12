@@ -1,4 +1,4 @@
-import { type PropsWithChildren, type Ref, useCallback, useImperativeHandle, useMemo } from "react";
+import { type PropsWithChildren, type Ref, useCallback, useEffect, useImperativeHandle, useMemo } from "react";
 
 import {
   DATAGRID_DEFAULT_FILTER,
@@ -13,6 +13,7 @@ import { useDataGridState } from "./internal/hook.ts";
 import { InternalDataGridContext, type InternalDataGridContextType } from "./internal/context.ts";
 import type { DataGridState, DataGridReducer } from "./store/store.ts";
 import type { DataGridColumn, DataGridRef, DataGridRow } from "./types.ts";
+import { deepCopy } from "./utils.ts";
 
 /**
  * Defines configuration for how the grid's page state should behave
@@ -94,7 +95,8 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     onSelect,
   } = props;
 
-  const { page, limit, sort, order, filter, selected, setState } = useDataGridState(store);
+  const state = useDataGridState(store);
+  const { page, limit, sort, order, filter, selected, setState } = state;
 
   const onInternalSetPage: DataGridReducer["setPagination"] = useCallback(
     (page, limit) => {
@@ -216,6 +218,28 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
 
     onSelect?.(DATAGRID_DEFAULT_SELECTED);
   }, [setState, onChange, onSelect]);
+
+  useEffect(() => {
+    const stateSnapshot = deepCopy({ page, limit, sort, order, filter, selected });
+
+    let currentState = deepCopy({ page, limit, sort, order, filter, selected });
+    let stateWasChanged = false;
+
+    for (const column of columns) {
+      if (typeof column.filterConfig?.deriveState === "function") {
+        const newState = column.filterConfig.deriveState(currentState);
+
+        if (newState !== currentState) {
+          currentState = newState;
+          stateWasChanged = true;
+        }
+      }
+    }
+
+    if (stateWasChanged && JSON.stringify(stateSnapshot) !== JSON.stringify(currentState)) {
+      onInternalSetState(currentState);
+    }
+  }, [columns, filter, limit, onInternalSetState, order, page, selected, sort]);
 
   useImperativeHandle(ref, () => ({
     page: page ?? DATAGRID_DEFAULT_PAGE,
