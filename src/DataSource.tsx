@@ -255,9 +255,11 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     }
 
     if (shouldChange) {
-      onInternalSetState(currentState);
+      setState(currentState);
+      onChange?.(currentState);
+      onSelect?.(currentState.selected);
     }
-  }, [columns, filter, limit, order, page, selected, sort, onInternalSetState]);
+  }, [columns, filter, limit, onChange, onSelect, order, page, selected, setState, sort]);
 
   useImperativeHandle(ref, () => ({
     page: page ?? DATAGRID_DEFAULT_PAGE,
