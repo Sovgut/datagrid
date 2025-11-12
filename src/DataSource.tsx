@@ -188,11 +188,11 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
   );
 
   const onInternalSetState: DataGridReducer["setState"] = useCallback(
-    (state) => {
-      setState(state);
+    (newState) => {
+      setState(newState);
 
-      onChange?.(state);
-      onSelect?.(state.selected);
+      onChange?.(newState);
+      onSelect?.(newState.selected);
     },
     [setState, onChange, onSelect]
   );
@@ -221,25 +221,43 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
 
   useEffect(() => {
     const stateSnapshot = deepCopy({ page, limit, sort, order, filter, selected });
-
     let currentState = deepCopy({ page, limit, sort, order, filter, selected });
-    let stateWasChanged = false;
+    let shouldChange = false;
 
     for (const column of columns) {
       if (typeof column.filterConfig?.deriveState === "function") {
-        const newState = column.filterConfig.deriveState(currentState);
-
-        if (newState !== currentState) {
-          currentState = newState;
-          stateWasChanged = true;
-        }
+        currentState = column.filterConfig.deriveState(currentState);
       }
     }
 
-    if (stateWasChanged && JSON.stringify(stateSnapshot) !== JSON.stringify(currentState)) {
+    if (!shouldChange && stateSnapshot.page !== currentState.page) {
+      shouldChange = true;
+    }
+
+    if (!shouldChange && stateSnapshot.limit !== currentState.limit) {
+      shouldChange = true;
+    }
+
+    if (!shouldChange && stateSnapshot.sort !== currentState.sort) {
+      shouldChange = true;
+    }
+
+    if (!shouldChange && stateSnapshot.order !== currentState.order) {
+      shouldChange = true;
+    }
+
+    if (!shouldChange && JSON.stringify(stateSnapshot.selected) !== JSON.stringify(currentState.selected)) {
+      shouldChange = true;
+    }
+
+    if (!shouldChange && JSON.stringify(stateSnapshot.filter) !== JSON.stringify(currentState.filter)) {
+      shouldChange = true;
+    }
+
+    if (shouldChange) {
       onInternalSetState(currentState);
     }
-  }, [columns, filter, limit, onInternalSetState, order, page, selected, sort]);
+  }, [columns, filter, limit, order, page, selected, sort, onInternalSetState]);
 
   useImperativeHandle(ref, () => ({
     page: page ?? DATAGRID_DEFAULT_PAGE,
