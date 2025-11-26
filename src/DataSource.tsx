@@ -77,6 +77,26 @@ export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChild
 }
 
 /**
+ * A helper function to calculate the derived state based on column configurations.
+ * It iterates through columns and applies any `deriveState` logic found in filter configs.
+ *
+ * @param initialState - The base state to start calculations from.
+ * @param columns - The columns definitions which may contain state derivation logic.
+ * @returns The new state object with all derivations applied.
+ */
+function calculateDerivedState<TData>(initialState: DataGridState, columns: DataGridColumn<TData>[]): DataGridState {
+  let currentState = deepCopy(initialState);
+
+  for (const column of columns) {
+    if (typeof column.filterConfig?.deriveState === "function") {
+      currentState = column.filterConfig.deriveState(currentState);
+    }
+  }
+
+  return currentState;
+}
+
+/**
  * A component responsible for orchestrating the DataGrid's state, logic,
  * and context. It handles state changes, executes callbacks, exposes an
  * imperative API via a ref, and provides all necessary data and actions
@@ -98,6 +118,12 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
   const state = useDataGridState(store);
   const { setState } = state;
 
+  /**
+   * Determines if the current state in the store matches the derived state
+   * required by the columns. This logic ensures that if the store becomes
+   * desynchronized from the business logic (e.g., on initial load),
+   * we can detect it.
+   */
   const { derivedState, shouldChange } = useMemo(() => {
     const localSnapshot: Pick<DataGridState, "page" | "limit" | "sort" | "order" | "filter" | "selected"> = {
       page: state.page ?? DATAGRID_DEFAULT_PAGE,
@@ -108,16 +134,10 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       selected: state.selected ?? DATAGRID_DEFAULT_SELECTED,
     };
 
-    let localCurrentState = deepCopy(localSnapshot);
+    const localCurrentState = calculateDerivedState(localSnapshot, columns);
     let localShouldChange = false;
 
-    for (const column of columns) {
-      if (typeof column.filterConfig?.deriveState === "function") {
-        localCurrentState = column.filterConfig.deriveState(localCurrentState);
-      }
-    }
-
-    if (!localShouldChange && localSnapshot.page !== localCurrentState.page) {
+    if (localSnapshot.page !== localCurrentState.page) {
       localShouldChange = true;
     }
 
@@ -146,54 +166,61 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
 
   const onInternalSetPage: DataGridReducer["setPagination"] = useCallback(
     (page, limit) => {
-      const newState = { ...derivedState, page, limit };
-      setState(newState);
-      onChange?.(newState);
+      const rawState = { ...derivedState, page, limit };
+      const nextState = calculateDerivedState(rawState, columns);
+
+      setState(nextState);
+      onChange?.(nextState);
     },
-    [derivedState, setState, onChange]
+    [derivedState, setState, onChange, columns]
   );
 
   const onInternalSetSort: DataGridReducer["setSorting"] = useCallback(
     (sort, order) => {
       const newPage = resetPageOnQueryChange ? DATAGRID_DEFAULT_PAGE : derivedState.page;
-      const newState = { ...derivedState, page: newPage, sort, order };
+      const rawState = { ...derivedState, page: newPage, sort, order };
+      const nextState = calculateDerivedState(rawState, columns);
 
-      setState(newState);
-      onChange?.(newState);
+      setState(nextState);
+      onChange?.(nextState);
     },
-    [resetPageOnQueryChange, derivedState, setState, onChange]
+    [resetPageOnQueryChange, derivedState, setState, onChange, columns]
   );
 
   const onInternalSetFilter: DataGridReducer["setFilter"] = useCallback(
     (filter) => {
       const newPage = resetPageOnQueryChange ? DATAGRID_DEFAULT_PAGE : derivedState.page;
       const newFilter = filter ?? DATAGRID_DEFAULT_FILTER;
-      const newState = { ...derivedState, page: newPage, filter: newFilter };
+      const rawState = { ...derivedState, page: newPage, filter: newFilter };
+      const nextState = calculateDerivedState(rawState, columns);
 
-      setState(newState);
-      onChange?.(newState);
+      setState(nextState);
+      onChange?.(nextState);
     },
-    [resetPageOnQueryChange, derivedState, setState, onChange]
+    [resetPageOnQueryChange, derivedState, setState, onChange, columns]
   );
 
   const onInternalSetSelected: DataGridReducer["setSelected"] = useCallback(
     (selected) => {
       const newSelected = selected ?? DATAGRID_DEFAULT_SELECTED;
-      const newState = { ...derivedState, selected: newSelected };
+      const rawState = { ...derivedState, selected: newSelected };
+      const nextState = calculateDerivedState(rawState, columns);
 
-      setState(newState);
+      setState(nextState);
       onSelect?.(newSelected);
     },
-    [derivedState, setState, onSelect]
+    [derivedState, setState, onSelect, columns]
   );
 
   const onInternalSetState: DataGridReducer["setState"] = useCallback(
     (newState) => {
-      setState(newState);
-      onChange?.(newState);
-      onSelect?.(newState.selected);
+      const nextState = calculateDerivedState(newState, columns);
+
+      setState(nextState);
+      onChange?.(nextState);
+      onSelect?.(nextState.selected);
     },
-    [setState, onChange, onSelect]
+    [setState, onChange, onSelect, columns]
   );
 
   const clear = useCallback(() => {
@@ -205,16 +232,29 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       filter: DATAGRID_DEFAULT_FILTER,
       selected: DATAGRID_DEFAULT_SELECTED,
     };
-    setState(defaultState);
-    onChange?.(defaultState);
-    onSelect?.(defaultState.selected);
-  }, [setState, onChange, onSelect]);
 
+    // Even for clear/reset, we should respect column derivations if they enforce defaults
+    const nextState = calculateDerivedState(defaultState, columns);
+
+    setState(nextState);
+    onChange?.(nextState);
+    onSelect?.(nextState.selected);
+  }, [setState, onChange, onSelect, columns]);
+
+  /**
+   * Syncs the derived state back to the store only if a discrepancy is detected.
+   * By pre-calculating state in handlers, this effect should ideally only fire
+   * on initial mount or when props (columns) change drastically, preventing
+   * double-updates during normal user interaction.
+   */
   useEffect(() => {
     if (shouldChange) {
-      onInternalSetState(derivedState);
+      // Use setState directly here to avoid double-calculation,
+      // as derivedState is already fully calculated in useMemo
+      setState(derivedState);
+      onChange?.(derivedState);
     }
-  }, [shouldChange, derivedState, onInternalSetState]);
+  }, [shouldChange, derivedState, setState, onChange]);
 
   useImperativeHandle(ref, () => ({
     ...derivedState,
