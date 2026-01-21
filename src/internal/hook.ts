@@ -1,4 +1,4 @@
-import { type Context, useContext } from "react";
+import { useContext, type Context } from "react";
 
 import { InternalDataGridContext, type InternalDataGridContextType } from "./context.ts";
 import { useDataGridStore } from "../store/hook.ts";
@@ -11,7 +11,7 @@ import type { DataGridReducer } from "../store/store.ts";
  * management actions. This is the main hook intended for use by child
  * components of DataGrid.
  *
- * @throws {ReferenceError} Throws an error if used outside of a
+ * @throws {ReferenceError} Throws an error if used outside a
  * DataGrid context provider.
  */
 export function useDataGrid<TData extends DataGridRow>(): NonNullable<InternalDataGridContextType<TData>> {

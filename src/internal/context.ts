@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, type Context } from "react";
 
 import type { DataGridColumn, DataGridRow, ExpectedAny, Nullable } from "../types.ts";
 import type { DataGridReducer } from "../store/store.ts";
@@ -39,4 +39,5 @@ export type InternalDataGridContextType<TData> = Nullable<DataGridReducer & Inte
  *
  * @default null
  */
-export const InternalDataGridContext = createContext<InternalDataGridContextType<ExpectedAny>>(null);
+export const InternalDataGridContext: Context<InternalDataGridContextType<ExpectedAny>> =
+  createContext<InternalDataGridContextType<ExpectedAny>>(null);

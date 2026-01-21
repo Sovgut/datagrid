@@ -2,7 +2,7 @@ import type { ComponentType, ReactElement, ReactNode } from "react";
 import type { Nullish } from "utility-types";
 
 import type { DataGridColumnVisibility } from "./enums.ts";
-import { DataGridReducer, DataGridState } from "./store/store.ts";
+import type { DataGridReducer, DataGridState } from "./store/store.ts";
 
 /**
  * A utility type for situations where a value can be of any type.
@@ -173,7 +173,7 @@ export type DataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> = Bas
  */
 export type DataGridRef = DataGridReducer & {
   /**
-   * A function that resets all grid state (pagination, sorting, filtering,
+   * A function that resets all grid states (pagination, sorting, filtering,
    * selection) to their default values.
    */
   clear: () => void;

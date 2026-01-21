@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, type Context } from "react";
 
 import type { DataGridStore } from "./store.ts";
 import type { Nullable } from "../types.ts";
@@ -9,4 +9,4 @@ import type { Nullable } from "../types.ts";
  *
  * @default null
  */
-export const DataGridStoreContext = createContext<Nullable<DataGridStore>>(null);
+export const DataGridStoreContext: Context<Nullable<DataGridStore>> = createContext<Nullable<DataGridStore>>(null);

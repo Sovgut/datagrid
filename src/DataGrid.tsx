@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState } from "react";
 
 import { DataSource, type DataGridProps } from "./DataSource.tsx";
 import { createDataGridStore, type DataGridState } from "./store/store.ts";
@@ -26,7 +26,7 @@ interface Props<TData> extends DataGridProps<TData> {
  */
 export function DataGrid<TData extends DataGridRow>(props: Props<TData>) {
   const { query, ...rest } = props;
-  const store = useRef(createDataGridStore(query)).current;
+  const [store] = useState(() => createDataGridStore(query));
 
   return (
     <DataGridStoreContext.Provider value={store}>

@@ -121,7 +121,7 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
   /**
    * Determines if the current state in the store matches the derived state
    * required by the columns. This logic ensures that if the store becomes
-   * desynchronized from the business logic (e.g., on initial load),
+   * desynchronized from the business logic (e.g., on an initial load),
    * we can detect it.
    */
   const { derivedState, shouldChange } = useMemo(() => {
