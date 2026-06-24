@@ -1,6 +1,6 @@
 {
   "name": "@sovgut/datagrid",
-  "version": "4.9.1",
+  "version": "4.9.2",
   "type": "module",
   "repository": {
     "type": "git",
@@ -22,9 +22,11 @@
     "format": "biome format ./src --write",
     "check": "biome check --write ./src"
   },
-  "dependencies": {
+  "dependencies": {},
+  "peerDependencies": {
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
@@ -35,6 +37,8 @@
     "@vitejs/plugin-react": "^6.0.3",
     "babel-plugin-react-compiler": "^1.0.0",
     "globals": "^17.7.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "typescript": "~6.0.3",
     "utility-types": "^3.11.0",
     "vite": "^8.1.0",

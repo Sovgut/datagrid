@@ -30,7 +30,7 @@ export default defineConfig({
       formats: ["es"],
     },
     rolldownOptions: {
-      external: ["react", "react-dom", "react/jsx-runtime"],
+      external: ["react", "react-dom", "react/jsx-runtime", "react/compiler-runtime", "zustand"],
     },
   },
   resolve: {
