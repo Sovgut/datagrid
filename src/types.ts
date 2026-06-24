@@ -182,7 +182,7 @@ type RenderStrategy<TData> =
  * The complete definition for a DataGrid column, combining the base
  * properties with a specific rendering strategy.
  */
-export type DataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> = BaseDataGridColumn<TData, TMetadata> &
+export type DataGridColumn<TData, TMetadata = Record<string, ExpectedAny>, TFilterContext = ExpectedAny> = BaseDataGridColumn<TData, TMetadata, TFilterContext> &
   RenderStrategy<TData>;
 
 /**

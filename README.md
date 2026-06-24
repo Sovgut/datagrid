@@ -158,7 +158,9 @@ interface MyFilterContext {
   onBlur: () => void;
 }
 
-const columns: DataGridColumn[] = [
+// Pass MyFilterContext as the third type parameter so every render-function
+// filter on this array has `ctx` inferred — no per-column annotation needed.
+const columns: DataGridColumn<MyData, Record<string, unknown>, MyFilterContext>[] = [
   {
     key: "name",
     label: "Name",
@@ -171,8 +173,8 @@ const columns: DataGridColumn[] = [
   {
     key: "status",
     label: "Status",
-    // Render function: receive your own context object for full control
-    filter: (ctx: MyFilterContext) => (
+    // Render function: `ctx` is inferred as MyFilterContext from the column type
+    filter: (ctx) => (
       <select
         value={ctx.value ?? ""}
         onChange={(e) => ctx.onChange(e.target.value || undefined)}
@@ -303,7 +305,7 @@ function RefExample() {
 
 | Prop                     | Type                             | Description                                                                        |
 |--------------------------|----------------------------------|------------------------------------------------------------------------------------|
-| `columns`                | `DataGridColumn<TData>[]`        | **Required.** An array of column definition objects.                               |
+| `columns`                | `DataGridColumn<TData, TMetadata, TFilterContext>[]` | **Required.** An array of column definition objects.          |
 | `rows`                   | `DataGridRow[]`                  | **Required.** The array of data to display. Each object must have a unique `id`.   |
 | `size`                   | `number`                         | **Required.** The total number of items available, used for pagination.            |
 | `query`                  | `Partial<DataGridState>`         | An object to set the initial state of the grid (page, limit, sort, etc.).          |
@@ -315,18 +317,24 @@ function RefExample() {
 
 ### DataGridColumn Properties
 
-| Property       | Type                                           | Description                                                                                                                     |
-|----------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `key`          | `keyof TData` \| `string`                      | **Required.** A unique key, usually matching a property in your data row object.                                                |
-| `label`        | `string`                                       | **Required.** The text to display in the column header.                                                                         |
-| `sortable`     | `boolean`                                      | If `true`, enables sorting for this column.                                                                                     |
-| `render`       | `(row: TData, ...) => ReactNode`               | A function to render custom content for a cell.                                                                                 |
-| `component`    | `ComponentType<DataGridComponentProps<TData>>` | A React component to render for the cell. Alternative to `render`.                                                              |
-| `filter`       | `ColumnFilter<T>` (`ReactElement \| ((ctx: T) => ReactElement)`) | A plain JSX element or a render function receiving a context of type `T`. Your table component is responsible for injecting props. |
-| `filterConfig` | `ColumnFilterConfig`                           | An advanced configuration object for filters, enabling dynamic props (`deriveProps`) and state synchronization (`deriveState`). |
-| `visibility`   | `DataGridColumnVisibility`                     | Controls the visibility of the column. Defaults to `Visible`.                                                                   |
-| `multiple`     | `boolean`                                      | Indicates if the filter for this column can accept multiple values.                                                             |
-| `metadata`     | `Record<string, any>`                          | A place to store any other custom data you need for the column.                                                                 |
+`DataGridColumn<TData, TMetadata, TFilterContext>` accepts three type parameters:
+
+- **`TData`** — the shape of a row object.
+- **`TMetadata`** — the shape of the `metadata` field. Defaults to `Record<string, any>`.
+- **`TFilterContext`** — the context object type passed to a render-function `filter`. Defaults to `any`. Declare it here once so TypeScript infers the argument in every render-function filter on the column array, instead of annotating each one individually.
+
+| Property       | Type                                                              | Description                                                                                                                     |
+|----------------|-------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `key`          | `keyof TData` \| `string`                                         | **Required.** A unique key, usually matching a property in your data row object.                                                |
+| `label`        | `string`                                                          | **Required.** The text to display in the column header.                                                                         |
+| `sortable`     | `boolean`                                                         | If `true`, enables sorting for this column.                                                                                     |
+| `render`       | `(row: TData, ...) => ReactNode`                                  | A function to render custom content for a cell.                                                                                 |
+| `component`    | `ComponentType<DataGridComponentProps<TData>>`                    | A React component to render for the cell. Alternative to `render`.                                                              |
+| `filter`       | `ColumnFilter<TFilterContext>` (`ReactElement \| ((ctx: TFilterContext) => ReactElement)`) | A plain JSX element or a render function. When using the render-function form, `ctx` is inferred as `TFilterContext`. |
+| `filterConfig` | `ColumnFilterConfig`                                              | An advanced configuration object for filters, enabling dynamic props (`deriveProps`) and state synchronization (`deriveState`). |
+| `visibility`   | `DataGridColumnVisibility`                                        | Controls the visibility of the column. Defaults to `Visible`.                                                                   |
+| `multiple`     | `boolean`                                                         | Indicates if the filter for this column can accept multiple values.                                                             |
+| `metadata`     | `TMetadata`                                                       | A place to store any other custom data you need for the column.                                                                 |
 
 ## License
 
