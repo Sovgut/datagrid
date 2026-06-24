@@ -145,11 +145,18 @@ Provide a `render` function for custom cell content and a `filter` element (or r
 
 The `filter` property accepts two forms:
 
-- **`ReactElement`** — a plain JSX element. The DataGrid clones it and injects controlled props (`value`, `onChange`, `onBlur`, `onKeyPress`, `ref`) via `React.cloneElement`.
-- **Render function** `(ctx: ColumnFilterContext) => ReactElement` — gives you full control over how the controlled props are applied, without relying on `cloneElement`.
+- **`ReactElement`** — a plain JSX element. Your custom table component receives the element from `column.filter` and is responsible for injecting controlled props (e.g. `value`, `onChange`) into it, typically via `React.cloneElement`.
+- **Render function** `(ctx: T) => ReactElement` — a function that receives a context object you define and returns a `ReactElement`, giving full control over how the element is built without relying on `cloneElement`.
 
 ```tsx
-import { DataGrid, type DataGridColumn, type ColumnFilterContext, useDataGrid } from "@sovgut/datagrid";
+import { DataGrid, type DataGridColumn, type ColumnFilter, useDataGrid } from "@sovgut/datagrid";
+
+// Define the shape of the context your table will pass to render-function filters
+interface MyFilterContext {
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+  onBlur: () => void;
+}
 
 const columns: DataGridColumn[] = [
   {
@@ -158,14 +165,14 @@ const columns: DataGridColumn[] = [
     sortable: true,
     // Render a custom element in the cell
     render: (row) => <strong>{row.name}</strong>,
-    // Plain element: the grid injects value/onChange/etc. via cloneElement
+    // Plain element: your table component injects value/onChange via cloneElement
     filter: <input type="text" placeholder="Filter by name..." />,
   },
   {
     key: "status",
     label: "Status",
-    // Render function: receive controlled props directly for full control
-    filter: (ctx: ColumnFilterContext) => (
+    // Render function: receive your own context object for full control
+    filter: (ctx: MyFilterContext) => (
       <select
         value={ctx.value ?? ""}
         onChange={(e) => ctx.onChange(e.target.value || undefined)}
@@ -315,7 +322,7 @@ function RefExample() {
 | `sortable`     | `boolean`                                      | If `true`, enables sorting for this column.                                                                                     |
 | `render`       | `(row: TData, ...) => ReactNode`               | A function to render custom content for a cell.                                                                                 |
 | `component`    | `ComponentType<DataGridComponentProps<TData>>` | A React component to render for the cell. Alternative to `render`.                                                              |
-| `filter`       | `ReactElement \| ((ctx: ColumnFilterContext) => ReactElement)` | A plain JSX element (props injected via `cloneElement`) or a render function receiving controlled props directly. |
+| `filter`       | `ColumnFilter<T>` (`ReactElement \| ((ctx: T) => ReactElement)`) | A plain JSX element or a render function receiving a context of type `T`. Your table component is responsible for injecting props. |
 | `filterConfig` | `ColumnFilterConfig`                           | An advanced configuration object for filters, enabling dynamic props (`deriveProps`) and state synchronization (`deriveState`). |
 | `visibility`   | `DataGridColumnVisibility`                     | Controls the visibility of the column. Defaults to `Visible`.                                                                   |
 | `multiple`     | `boolean`                                      | Indicates if the filter for this column can accept multiple values.                                                             |

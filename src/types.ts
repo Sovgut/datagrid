@@ -1,4 +1,4 @@
-import type { ComponentType, ReactElement, ReactNode, RefObject } from "react";
+import type { ComponentType, ReactElement, ReactNode } from "react";
 import type { Nullish } from "utility-types";
 
 import type { DataGridColumnVisibility } from "./enums.ts";
@@ -87,52 +87,24 @@ interface ColumnFilterConfig {
 }
 
 /**
- * The context object passed to a `ColumnFilter` render function.
- * It contains the controlled input props that the DataGrid injects
- * into the filter element.
+ * Defines the two forms a column filter can take.
+ *
+ * - **`ReactElement`** — a plain JSX element. The consuming component is
+ *   responsible for injecting controlled props (e.g. `value`, `onChange`)
+ *   into it, typically via `React.cloneElement`.
+ * - **Render function** `(ctx: T) => ReactElement` — a function that receives
+ *   a context object of type `T` and returns a `ReactElement`, giving full
+ *   control over how the filter element is built without relying on `cloneElement`.
+ *
+ * @template T - The type of the context object passed to the render function.
+ * Defaults to `ExpectedAny` so the type can be narrowed by the consuming component.
  */
-export interface ColumnFilterContext {
-  /**
-   * The current filter value for this column.
-   */
-  value: string | string[] | undefined;
-
-  /**
-   * Updates the filter value for this column.
-   */
-  onChange: (value: string | string[] | undefined) => void;
-
-  /**
-   * Called when the filter input loses focus.
-   */
-  onBlur: () => void;
-
-  /**
-   * Called on key press events (e.g., to submit the filter on Enter).
-   */
-  onKeyPress: (event: KeyboardEvent) => void;
-
-  /**
-   * A ref attached to the underlying input element for imperative access.
-   */
-  ref: RefObject<HTMLElement | null>;
-}
-
-/**
- * Defines the shape of a column filter. Accepts either:
- * - A `ReactElement` — a plain JSX element (e.g. `<input>`, `<Select />`).
- *   The grid will clone it and inject controlled props (`value`, `onChange`, etc.)
- *   via `React.cloneElement`.
- * - A render function `(ctx: ColumnFilterContext) => ReactElement` — provides full
- *   control over how the filter is rendered by receiving the controlled props directly,
- *   without relying on `React.cloneElement`.
- */
-export type ColumnFilter = ReactElement | ((ctx: ColumnFilterContext) => ReactElement);
+export type ColumnFilter<T = ExpectedAny> = ReactElement | ((ctx: T) => ReactElement);
 
 /**
  * Defines the core properties for a column in the DataGrid.
  */
-interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> {
+interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>, TFilterContext = ExpectedAny> {
   /**
    * A unique key for the column, typically corresponding to a property
    * in the TData object.
@@ -151,25 +123,13 @@ interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>> {
   sortable?: boolean;
 
   /**
-   * Defines the filter UI for this column. Accepts either a plain React element
-   * or a render function receiving a {@link ColumnFilterContext}.
-   *
-   * When a `ReactElement` is provided, the DataGrid clones it and injects
-   * controlled props (`value`, `onChange`, `onBlur`, `onKeyPress`, `ref`) via
-   * `React.cloneElement`. The `ref` targets the root DOM element of the filter.
-   *
-   * When a function is provided, it is called with a `ColumnFilterContext` object,
-   * giving you full control over how these props are applied to your element.
-   *
-   * @example
-   * // Plain element — props are injected via cloneElement
-   * filter: <input type="text" placeholder="Search..." />
-   *
-   * @example
-   * // Render function — full control over prop wiring
-   * filter: (ctx) => <input value={ctx.value ?? ""} onChange={(e) => ctx.onChange(e.target.value)} />
+   * The filter UI definition for this column. Accepts either a plain
+   * `ReactElement` (the consuming component injects controlled props via
+   * `cloneElement`) or a render function that receives a context of type
+   * `TFilterContext` and returns a `ReactElement` for full control over
+   * how the controlled props are applied.
    */
-  filter?: ColumnFilter;
+  filter?: ColumnFilter<TFilterContext>;
 
   /**
    * Describes the full, advanced filter configuration for a single column.
