@@ -1,7 +1,6 @@
-import { createContext, type Context } from "react";
-
-import type { DataGridColumn, DataGridRow, ExpectedAny, Nullable } from "../types.ts";
+import { type Context, createContext } from "react";
 import type { DataGridReducer } from "../store/store.ts";
+import type { DataGridColumn, DataGridRow, ExpectedAny, Nullable } from "../types.ts";
 
 /**
  * Describes the core data properties provided by the DataGrid context,

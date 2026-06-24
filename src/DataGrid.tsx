@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { DataSource, type DataGridProps } from "./DataSource.tsx";
-import { createDataGridStore, type DataGridState } from "./store/store.ts";
+import { type DataGridProps, DataSource } from "./DataSource.tsx";
 import { DataGridStoreContext } from "./store/context.ts";
+import { createDataGridStore, type DataGridState } from "./store/store.ts";
 import type { DataGridRow } from "./types.ts";
 
 /**

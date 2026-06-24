@@ -8,7 +8,7 @@ import type { DataGridReducer, DataGridState } from "./store/store.ts";
  * A utility type for situations where a value can be of any type.
  * Should be used sparingly.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: this type intentionally aliases `any` — that is its purpose
 export type ExpectedAny = any;
 
 /**

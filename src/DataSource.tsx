@@ -9,9 +9,9 @@ import {
   DATAGRID_DEFAULT_SORT,
   DATAGRID_RESET_PAGE_ON_QUERY_CHANGE,
 } from "./constants.ts";
-import { useDataGridState } from "./internal/hook.ts";
 import { InternalDataGridContext, type InternalDataGridContextType } from "./internal/context.ts";
-import type { DataGridState, DataGridReducer } from "./store/store.ts";
+import { useDataGridState } from "./internal/hook.ts";
+import type { DataGridReducer, DataGridState } from "./store/store.ts";
 import type { DataGridColumn, DataGridRef, DataGridRow } from "./types.ts";
 import { deepCopy } from "./utils.ts";
 

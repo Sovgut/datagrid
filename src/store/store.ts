@@ -1,5 +1,5 @@
-import { createStore } from "zustand";
 import { isNullish } from "utility-types";
+import { createStore } from "zustand";
 
 import {
   DATAGRID_DEFAULT_FILTER,

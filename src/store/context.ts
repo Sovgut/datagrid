@@ -1,7 +1,6 @@
-import { createContext, type Context } from "react";
-
-import type { DataGridStore } from "./store.ts";
+import { type Context, createContext } from "react";
 import type { Nullable } from "../types.ts";
+import type { DataGridStore } from "./store.ts";
 
 /**
  * A React context that holds the Zustand store instance for the DataGrid.

@@ -1,9 +1,8 @@
 import { useContext } from "react";
 import { useStore } from "zustand";
-
+import type { Nullable } from "../types.ts";
 import { DataGridStoreContext } from "./context.ts";
 import type { DataGridReducer, DataGridStore } from "./store.ts";
-import type { Nullable } from "../types.ts";
 
 /**
  * A custom hook for accessing and subscribing to the DataGrid's Zustand

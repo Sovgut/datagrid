@@ -1,9 +1,8 @@
-import { useContext, type Context } from "react";
-
-import { InternalDataGridContext, type InternalDataGridContextType } from "./context.ts";
+import { type Context, useContext } from "react";
 import { useDataGridStore } from "../store/hook.ts";
-import type { DataGridRow } from "../types.ts";
 import type { DataGridReducer } from "../store/store.ts";
+import type { DataGridRow } from "../types.ts";
+import { InternalDataGridContext, type InternalDataGridContextType } from "./context.ts";
 
 /**
  * The primary consumer hook for the DataGrid. It provides access to the
