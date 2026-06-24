@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import babel from "@rolldown/plugin-babel";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import dts from "vite-plugin-dts";
 
 const __dirname = new URL(".", import.meta.url).pathname;
 
@@ -11,6 +12,14 @@ export default defineConfig({
     react(),
     babel({
       presets: [reactCompilerPreset()],
+    }),
+    dts({
+      tsconfigPath: "./tsconfig.app.json",
+      entryRoot: "src",
+      outDirs: "dist",
+      compilerOptions: {
+        rootDir: "src",
+      },
     }),
   ],
   build: {
