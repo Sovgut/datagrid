@@ -1,6 +1,6 @@
 {
   "name": "@sovgut/datagrid",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Headless, unstyled state management for React data grids: pagination, sorting, per-column filters, selection and column visibility, with the markup left entirely to you.",
   "type": "module",
   "repository": {
@@ -56,9 +56,6 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest"
   },
-  "dependencies": {
-    "zustand": "^5.0.14"
-  },
   "peerDependencies": {
     "react": "^19.0.0"
   },
@@ -79,6 +76,7 @@
     "typescript": "~6.0.3",
     "vite": "^8.2.1",
     "vite-plugin-dts": "^5.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "zustand": "^5.0.14"
   }
 }
