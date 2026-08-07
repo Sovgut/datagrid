@@ -1,4 +1,12 @@
-import { type PropsWithChildren, type Ref, useCallback, useEffect, useImperativeHandle, useMemo } from "react";
+import {
+  type PropsWithChildren,
+  type ReactElement,
+  type Ref,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+} from "react";
 
 import {
   DATAGRID_DEFAULT_FILTER,
@@ -13,7 +21,7 @@ import { InternalDataGridContext, type InternalDataGridContextType } from "./int
 import { useDataGridState } from "./internal/hook.ts";
 import type { DataGridReducer, DataGridState } from "./store/store.ts";
 import type { DataGridColumn, DataGridRef, DataGridRow } from "./types.ts";
-import { deepCopy } from "./utils.ts";
+import { cloneDataGridState, isFilterEqual, isSelectedEqual } from "./utils.ts";
 
 /**
  * Defines configuration for how the grid's page state should behave
@@ -33,7 +41,7 @@ export interface DataGridResetProps {
  * Defines the core properties for the data handling and rendering layer
  * of the DataGrid. It accepts data, column definitions, and state callbacks.
  */
-export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChildren {
+export interface DataSourceProps<TData extends DataGridRow> extends DataGridResetProps, PropsWithChildren {
   /**
    * An array of column definition objects that specify how the grid's
    * header and cells should be rendered and behave.
@@ -44,7 +52,7 @@ export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChild
    * An array of data objects to be displayed in the grid. Each object
    * must conform to the DataGridRow interface (i.e., include an `id`).
    */
-  rows: DataGridRow[];
+  rows: TData[];
 
   /**
    * The total number of items available from the data source, which is
@@ -62,7 +70,7 @@ export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChild
    * A ref that provides imperative access to the grid's API, allowing
    * parent components to control its state and behavior directly.
    */
-  ref?: Ref<DataGridRef>;
+  ref?: Ref<DataGridRef<TData>>;
 
   /**
    * A callback function that is invoked whenever the grid's state
@@ -85,7 +93,7 @@ export interface DataGridProps<TData> extends DataGridResetProps, PropsWithChild
  * @returns The new state object with all derivations applied.
  */
 function calculateDerivedState<TData>(initialState: DataGridState, columns: DataGridColumn<TData>[]): DataGridState {
-  let currentState = deepCopy(initialState);
+  let currentState = cloneDataGridState(initialState);
 
   for (const column of columns) {
     if (typeof column.filterConfig?.deriveState === "function") {
@@ -102,7 +110,7 @@ function calculateDerivedState<TData>(initialState: DataGridState, columns: Data
  * imperative API via a ref, and provides all necessary data and actions
  * to its children through the InternalDataGridContext.
  */
-export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData>) {
+export function DataSource<TData extends DataGridRow>(props: DataSourceProps<TData>): ReactElement {
   const {
     resetPageOnQueryChange = DATAGRID_RESET_PAGE_ON_QUERY_CHANGE,
     columns = [],
@@ -153,11 +161,11 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       localShouldChange = true;
     }
 
-    if (!localShouldChange && JSON.stringify(localSnapshot.selected) !== JSON.stringify(localCurrentState.selected)) {
+    if (!localShouldChange && !isSelectedEqual(localSnapshot.selected, localCurrentState.selected)) {
       localShouldChange = true;
     }
 
-    if (!localShouldChange && JSON.stringify(localSnapshot.filter) !== JSON.stringify(localCurrentState.filter)) {
+    if (!localShouldChange && !isFilterEqual(localSnapshot.filter, localCurrentState.filter)) {
       localShouldChange = true;
     }
 
@@ -178,7 +186,13 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
   const onInternalSetSort: DataGridReducer["setSorting"] = useCallback(
     (sort, order) => {
       const newPage = resetPageOnQueryChange ? DATAGRID_DEFAULT_PAGE : derivedState.page;
-      const rawState = { ...derivedState, page: newPage, sort, order };
+      // `setSorting` accepts `undefined` for convenience; the state never holds one.
+      const rawState = {
+        ...derivedState,
+        page: newPage,
+        sort: sort ?? DATAGRID_DEFAULT_SORT,
+        order: order ?? DATAGRID_DEFAULT_ORDER,
+      };
       const nextState = calculateDerivedState(rawState, columns);
 
       setState(nextState);
@@ -207,7 +221,10 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       const nextState = calculateDerivedState(rawState, columns);
 
       setState(nextState);
-      onSelect?.(newSelected);
+      // Report what actually reached the store, not the raw argument, matching
+      // `onInternalSetState` and `clear`. A column's `deriveState` is allowed to
+      // adjust the selection, and the callback must not disagree with the store.
+      onSelect?.(nextState.selected);
     },
     [derivedState, setState, onSelect, columns]
   );
@@ -256,6 +273,17 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     }
   }, [shouldChange, derivedState, setState, onChange]);
 
+  /**
+   * Deliberately declared without a dependency array.
+   *
+   * The handle carries state *values* (`page`, `limit`, `sort`, `order`,
+   * `filter`, `selected`) alongside the action functions, so it has to be
+   * rebuilt on every render. Pinning it to a dependency list would hand the
+   * parent a `ref.current` holding state from an earlier render, which is the
+   * exact failure this API exists to avoid: a caller reading
+   * `ref.current.limit` to compute the next page would compute it from a stale
+   * value.
+   */
   useImperativeHandle(ref, () => ({
     ...derivedState,
     setSelected: onInternalSetSelected,
@@ -263,9 +291,9 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
     setSorting: onInternalSetSort,
     setFilter: onInternalSetFilter,
     setState: onInternalSetState,
-    columns: columns ?? [],
-    rows: rows ?? [],
-    size: size ?? 0,
+    columns,
+    rows,
+    size,
     clear,
   }));
 
@@ -277,9 +305,9 @@ export function DataSource<TData extends DataGridRow>(props: DataGridProps<TData
       setSorting: onInternalSetSort,
       setFilter: onInternalSetFilter,
       setState: onInternalSetState,
-      columns: columns ?? [],
-      rows: rows ?? [],
-      size: size ?? 0,
+      columns,
+      rows,
+      size,
     }),
     [
       derivedState,

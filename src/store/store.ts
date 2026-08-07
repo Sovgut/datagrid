@@ -1,5 +1,4 @@
-import { isNullish } from "utility-types";
-import { createStore } from "zustand";
+import { createStore, type StoreApi } from "zustand";
 
 import {
   DATAGRID_DEFAULT_FILTER,
@@ -29,16 +28,22 @@ export interface DataGridState {
   limit: number;
 
   /**
-   * The key of the column by which the data is sorted.
+   * The key of the column by which the data is sorted, or `null` when the data
+   * is unsorted.
+   *
+   * `null` is the only way to say "unsorted". `setSorting` accepts `undefined`
+   * for convenience and normalizes it, but the state itself never holds one:
+   * two spellings of absence in a public type is a trap, not a convenience.
+   *
    * @default null
    */
-  sort: Nullable<string>;
+  sort: string | null;
 
   /**
-   * The direction of the sort.
+   * The direction of the sort, or `null` when the data is unsorted.
    * @default null
    */
-  order: Nullable<"asc" | "desc">;
+  order: "asc" | "desc" | null;
 
   /**
    * An object representing the active filters, where keys are column
@@ -66,8 +71,11 @@ export interface DataGridReducer extends DataGridState {
 
   /**
    * Sets the sorting state (sort key and order).
+   *
+   * `undefined` is accepted for either argument and normalized to `null`, so
+   * `setSorting(column.key, undefined)` does not need a guard at the call site.
    */
-  setSorting: (sort: DataGridState["sort"], order: DataGridState["order"]) => void;
+  setSorting: (sort: Nullable<DataGridState["sort"]>, order: Nullable<DataGridState["order"]>) => void;
 
   /**
    * Sets the filter state.
@@ -80,7 +88,14 @@ export interface DataGridReducer extends DataGridState {
   setSelected: (selected: DataGridState["selected"]) => void;
 
   /**
-   * Sets the entire state
+   * Replaces the entire query state in one call.
+   *
+   * The contract is a **complete** state, which is why the parameter is not
+   * `Partial`. The built-in store still spreads what it receives over the
+   * previous state, but that is a safety net for untyped callers rather than a
+   * promise: an external store is free to replace outright, and
+   * `@sovgut/datagrid-react-router` does exactly that. Do not rely on omitted
+   * fields keeping their previous value.
    */
   setState: (state: DataGridState) => void;
 }
@@ -90,9 +105,8 @@ export interface DataGridReducer extends DataGridState {
  * the DataGrid's state. It initializes with default values which can be
  * overridden by the provided initial properties.
  */
-export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>) => {
-  const props = initProps ?? {};
-  const DEFAULT_PROPS: DataGridState = {
+export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>): StoreApi<DataGridReducer> => {
+  const defaults: DataGridState = {
     page: DATAGRID_DEFAULT_PAGE,
     limit: DATAGRID_DEFAULT_LIMIT,
     sort: DATAGRID_DEFAULT_SORT,
@@ -101,18 +115,26 @@ export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>)
     selected: DATAGRID_DEFAULT_SELECTED,
   };
 
+  // Spreading `initProps` directly would let an explicit `undefined` overwrite
+  // a default, so `query={{ sort: undefined }}` would put `undefined` into a
+  // field the public type promises is `string | null`.
+  for (const [key, value] of Object.entries(initProps ?? {})) {
+    if (value !== undefined) {
+      Reflect.set(defaults, key, value);
+    }
+  }
+
   return createStore<DataGridReducer>()((set) => ({
-    ...DEFAULT_PROPS,
-    ...props,
+    ...defaults,
     setPagination: (page, limit) => set(() => ({ page, limit })),
     setSorting: (sort, order) =>
       set(() => ({
-        sort: isNullish(sort) ? DATAGRID_DEFAULT_SORT : sort,
-        order: isNullish(order) ? DATAGRID_DEFAULT_ORDER : order,
+        sort: sort ?? DATAGRID_DEFAULT_SORT,
+        order: order ?? DATAGRID_DEFAULT_ORDER,
       })),
     setFilter: (filter) => set(() => ({ filter })),
     setSelected: (selected) => set(() => ({ selected })),
-    setState: (state) => set((oldState) => ({ ...oldState, ...state })),
+    setState: (state) => set(() => ({ ...state })),
   }));
 };
 

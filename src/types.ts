@@ -1,14 +1,18 @@
 import type { ComponentType, ReactElement, ReactNode } from "react";
-import type { Nullish } from "utility-types";
 
 import type { DataGridColumnVisibility } from "./enums.ts";
 import type { DataGridReducer, DataGridState } from "./store/store.ts";
 
 /**
+ * A value that is either `null` or `undefined`.
+ */
+type Nullish = null | undefined;
+
+/**
  * A utility type for situations where a value can be of any type.
  * Should be used sparingly.
  */
-// biome-ignore lint/suspicious/noExplicitAny: this type intentionally aliases `any` — that is its purpose
+// biome-ignore lint/suspicious/noExplicitAny: this type intentionally aliases `any`, that is its purpose
 export type ExpectedAny = any;
 
 /**
@@ -25,6 +29,23 @@ export interface DataGridRow {
    * A unique identifier for the row, used for keying and selection.
    */
   id: string | number;
+
+  /**
+   * Arbitrary cell values, keyed by column key.
+   *
+   * The value type is deliberately `any` rather than `unknown`. Two things
+   * break if it is narrowed:
+   *
+   * 1. An `interface` does not get an implicit index signature in TypeScript
+   *    (only type aliases and object literals do), so `interface User { name: string }`
+   *    would stop satisfying `DataGridRow` and every grid mounted with an
+   *    interface-typed row would fail to compile.
+   * 2. `unknown` is not assignable to `ReactNode`, so rendering `row[column.key]`
+   *    directly, which is what an unstyled table body does, would stop compiling.
+   *
+   * Prefer parameterizing the grid with your own row type (`useDataGrid<User>()`)
+   * over reading through this index signature.
+   */
   [key: string]: ExpectedAny;
 }
 
@@ -52,16 +73,22 @@ export interface DataGridComponentProps<TData> {
 /**
  * Describes the full, advanced filter configuration for a single column.
  */
-interface ColumnFilterConfig {
+export interface ColumnFilterConfig {
   /**
-   * A pure function for describing dynamic prop generation for the `component`.
+   * A pure function for describing dynamic prop generation for the filter
+   * element, used to configure it from the current global filter state (a
+   * "method" filter whose options depend on the selected "currency", say).
    *
-   * This function runs *during the render phase* and is used to
-   * dynamically configure the filter's UI based on the current global filter state.
+   * **This headless core never calls it.** It is a declaration your rendering
+   * layer reads during its own render phase, merging the result into the
+   * filter element. The split is deliberate: only the layer that owns the
+   * markup knows how to apply props to it, whether that is `cloneElement`, a
+   * render prop or something else. See `deriveState` for the counterpart the
+   * core does run.
    *
-   * The props returned from this function will be merged with the component's
-   * original props. The grid's internal `value` and `onChange` props
-   * will always take precedence.
+   * By convention the returned props are merged over the element's original
+   * props, and the controlled `value` and `onChange` supplied by the rendering
+   * layer take precedence over both.
    *
    * @param props - The component's original static props (from `component.props`).
    * @param context - The current filter context, containing `filter` state.
@@ -72,14 +99,16 @@ interface ColumnFilterConfig {
   /**
    * A function for describing derived state logic (state synchronization).
    *
-   * This function runs *after render* (inside `useEffect`) and is used to
-   * validate or synchronize the filter state.
+   * Unlike `deriveProps`, this one **is** called by the grid itself, once per
+   * column that declares it, in column order. Each function receives what the
+   * previous one returned, so a later column sees the earlier column's result.
    *
-   * **Note:** The DataGrid should pass a *deep clone* of the context to this
-   * function, allowing the function to safely mutate the context object
-   * to produce a new state.
+   * The context handed in is a copy the function may mutate: the state object,
+   * its `filter` object and its `selected` array are all fresh. Values nested
+   * inside a filter entry are shared with the store by reference, so replace
+   * them rather than editing them in place.
    *
-   * @param context - A *clone* of the current filter context.
+   * @param context - A copy of the current grid state.
    * This function is allowed to mutate this object directly.
    * @returns The (potentially mutated) context object.
    */
@@ -89,10 +118,10 @@ interface ColumnFilterConfig {
 /**
  * Defines the two forms a column filter can take.
  *
- * - **`ReactElement`** — a plain JSX element. The consuming component is
+ * - **`ReactElement`** - a plain JSX element. The consuming component is
  *   responsible for injecting controlled props (e.g. `value`, `onChange`)
  *   into it, typically via `React.cloneElement`.
- * - **Render function** `(ctx: T) => ReactElement` — a function that receives
+ * - **Render function** `(ctx: T) => ReactElement` - a function that receives
  *   a context object of type `T` and returns a `ReactElement`, giving full
  *   control over how the filter element is built without relying on `cloneElement`.
  *
@@ -104,12 +133,23 @@ export type ColumnFilter<T = ExpectedAny> = ReactElement | ((ctx: T) => ReactEle
 /**
  * Defines the core properties for a column in the DataGrid.
  */
-interface BaseDataGridColumn<TData, TMetadata = Record<string, ExpectedAny>, TFilterContext = ExpectedAny> {
+interface BaseDataGridColumn<TMetadata = Record<string, ExpectedAny>, TFilterContext = ExpectedAny> {
   /**
    * A unique key for the column, typically corresponding to a property
    * in the TData object.
+   *
+   * This is a contract, not a caption: it is simultaneously the filter key, the
+   * name a URL-syncing plugin uses as a query parameter, and the identifier a
+   * saved column layout is stored under. Renaming one breaks shared links and
+   * stored settings.
+   *
+   * It is a plain `string` rather than `keyof TData | (string & {})`. That
+   * spelling promised autocompletion it could not deliver: because `TData`
+   * inherits `[key: string]` from {@link DataGridRow}, `keyof TData` already
+   * widens to `string | number`, so the union collapsed to `string | number`
+   * and quietly accepted a numeric key.
    */
-  key: keyof TData | (string & {});
+  key: string;
 
   /**
    * The text to display in the column header.
@@ -182,17 +222,56 @@ type RenderStrategy<TData> =
  * The complete definition for a DataGrid column, combining the base
  * properties with a specific rendering strategy.
  */
-export type DataGridColumn<TData, TMetadata = Record<string, ExpectedAny>, TFilterContext = ExpectedAny> = BaseDataGridColumn<TData, TMetadata, TFilterContext> &
-  RenderStrategy<TData>;
+export type DataGridColumn<
+  TData,
+  TMetadata = Record<string, ExpectedAny>,
+  TFilterContext = ExpectedAny,
+> = BaseDataGridColumn<TMetadata, TFilterContext> & RenderStrategy<TData>;
 
 /**
- * Defines the imperative API exposed by the DataGrid's ref. It includes
- * all state reducers plus internal methods.
+ * The imperative API exposed through the grid's `ref`: every state value, every
+ * action, the data the grid was given, and `clear`.
+ *
+ * Pass your row type to have `rows` and `columns` typed:
+ *
+ * ```ts
+ * const grid = useRef<DataGridRef<User>>(null);
+ * grid.current?.rows[0].name; // string
+ * ```
+ *
+ * The type parameter defaults to `ExpectedAny` rather than to
+ * {@link DataGridRow}, and that choice is load-bearing. `DataGridColumn` is
+ * contravariant in its row type through `render` and `component`, so
+ * `DataGridRef<DataGridRow>` would **not** be assignable to
+ * `DataGridRef<User>`, and every unparameterized `useRef<DataGridRef>()` would
+ * have to be annotated. Defaulting to `ExpectedAny` keeps the bare form
+ * compatible with every instantiation while losing nothing for anyone who does
+ * name their row type.
  */
-export type DataGridRef = DataGridReducer & {
+export type DataGridRef<TData extends DataGridRow = ExpectedAny> = DataGridReducer & {
   /**
-   * A function that resets all grid states (pagination, sorting, filtering,
-   * selection) to their default values.
+   * The column definitions currently handed to the grid.
+   */
+  columns: DataGridColumn<TData>[];
+
+  /**
+   * The rows currently handed to the grid, which is the current page rather
+   * than the whole data source.
+   */
+  rows: TData[];
+
+  /**
+   * The total number of items in the data source.
+   */
+  size: number;
+
+  /**
+   * Resets pagination, sorting, filtering and selection to the package
+   * defaults, then applies the columns' `deriveState`.
+   *
+   * Note that the baseline is the `DATAGRID_DEFAULT_*` constants, **not** the
+   * `query` prop the grid started with. To return to your own baseline, call
+   * `setState` with it instead.
    */
   clear: () => void;
 };

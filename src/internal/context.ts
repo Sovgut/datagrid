@@ -6,7 +6,7 @@ import type { DataGridColumn, DataGridRow, ExpectedAny, Nullable } from "../type
  * Describes the core data properties provided by the DataGrid context,
  * including column definitions and the dataset itself.
  */
-interface InternalDataGridData<TData> {
+interface InternalDataGridData<TData extends DataGridRow> {
   /**
    * The array of column definitions that configure the grid's structure,
    * rendering, and behavior.
@@ -21,7 +21,7 @@ interface InternalDataGridData<TData> {
    * The array of data rows to be displayed for the current page or view
    * of the grid.
    */
-  rows: DataGridRow[];
+  rows: TData[];
 }
 
 /**
@@ -29,7 +29,9 @@ interface InternalDataGridData<TData> {
  * DataSource component. It consolidates the state reducer, loading state,
  * and core data (columns, rows, size) into a single, nullable object.
  */
-export type InternalDataGridContextType<TData> = Nullable<DataGridReducer & InternalDataGridData<TData>>;
+export type InternalDataGridContextType<TData extends DataGridRow> = Nullable<
+  DataGridReducer & InternalDataGridData<TData>
+>;
 
 /**
  * The internal React context used to pass all grid data and actions
