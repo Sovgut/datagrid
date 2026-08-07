@@ -1,6 +1,6 @@
 {
   "name": "@sovgut/datagrid",
-  "version": "4.9.3",
+  "version": "5.0.0",
   "description": "Headless, unstyled state management for React data grids: pagination, sorting, per-column filters, selection and column visibility, with the markup left entirely to you.",
   "type": "module",
   "repository": {
