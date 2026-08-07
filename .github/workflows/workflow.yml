@@ -10,14 +10,14 @@ on:
 jobs:
   check-version:
     name: Package
-    uses: Sovgut/state/.github/workflows/check-version.yml@main
+    uses: ./.github/workflows/check-version.yml
 
   build:
     name: Package
     needs:
       - check-version
     if: needs.check-version.outputs.is-changed == 'true'
-    uses: Sovgut/state/.github/workflows/build.yml@main
+    uses: ./.github/workflows/build.yml
     with:
       node-version: "22.x"
       package-version: ${{ needs.check-version.outputs.version }}
@@ -27,7 +27,7 @@ jobs:
     needs:
       - check-version
       - build
-    uses: Sovgut/state/.github/workflows/deploy-npm.yml@main
+    uses: ./.github/workflows/deploy-npm.yml
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     with:
@@ -39,7 +39,7 @@ jobs:
     needs:
       - check-version
       - build
-    uses: Sovgut/state/.github/workflows/deploy-github.yml@main
+    uses: ./.github/workflows/deploy-github.yml
     with:
       node-version: "22.x"
       package-version: ${{ needs.check-version.outputs.version }}
