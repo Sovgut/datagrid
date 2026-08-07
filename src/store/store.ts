@@ -1,4 +1,4 @@
-import { createStore, type StoreApi } from "zustand";
+import { createStore } from "zustand";
 
 import {
   DATAGRID_DEFAULT_FILTER,
@@ -101,11 +101,34 @@ export interface DataGridReducer extends DataGridState {
 }
 
 /**
+ * The store the grid keeps its state in.
+ *
+ * Declared structurally rather than as zustand's `StoreApi`, and that is
+ * load-bearing rather than stylistic. `isolatedDeclarations` requires the
+ * factory below to carry an explicit return type, and naming `StoreApi` there
+ * puts an `import ... from "zustand"` at the top of the emitted
+ * `store.d.ts`. Since the entry point re-exports `DataGridReducer` and
+ * `DataGridState` from this module, that import lands on the public type path,
+ * and any consumer type-checking the package's declarations would have to
+ * resolve zustand themselves. The whole point of bundling zustand is that they
+ * do not have to.
+ *
+ * This shape is the part of `StoreApi` the package actually uses, and it stays
+ * structurally compatible with it.
+ */
+export interface DataGridStore {
+  getState: () => DataGridReducer;
+  getInitialState: () => DataGridReducer;
+  setState: (partial: Partial<DataGridReducer>, replace?: false) => void;
+  subscribe: (listener: (state: DataGridReducer, previous: DataGridReducer) => void) => () => void;
+}
+
+/**
  * A factory function that creates a new Zustand store instance for managing
  * the DataGrid's state. It initializes with default values which can be
  * overridden by the provided initial properties.
  */
-export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>): StoreApi<DataGridReducer> => {
+export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>): DataGridStore => {
   const defaults: DataGridState = {
     page: DATAGRID_DEFAULT_PAGE,
     limit: DATAGRID_DEFAULT_LIMIT,
@@ -137,9 +160,3 @@ export const createDataGridStore = (initProps: Nullable<Partial<DataGridState>>)
     setState: (state) => set(() => ({ ...state })),
   }));
 };
-
-/**
- * The type representing a DataGrid Zustand store instance, as returned
- * by the createDataGridStore factory.
- */
-export type DataGridStore = ReturnType<typeof createDataGridStore>;
