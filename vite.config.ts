@@ -5,7 +5,7 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
-const __dirname = new URL(".", import.meta.url).pathname;
+const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -24,18 +24,17 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, "src/main.ts"),
+      entry: resolve(rootDir, "src/main.ts"),
       name: "DataGrid",
       fileName: "datagrid",
       formats: ["es"],
     },
     rolldownOptions: {
-      external: ["react", "react-dom", "react/jsx-runtime", "react/compiler-runtime", "zustand"],
-    },
-  },
-  resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // `zustand` is deliberately absent: it is a regular dependency and gets
+      // bundled, so consumers never have to install or version it themselves.
+      // The store it backs is created internally and never shared across
+      // package boundaries, so a second copy in the consumer's tree is inert.
+      external: ["react", "react-dom", "react/jsx-runtime", "react/compiler-runtime"],
     },
   },
 });

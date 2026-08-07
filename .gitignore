@@ -6,10 +6,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-tsconfig.tsbuildinfo
+
+# Dependencies and build output
 node_modules
 dist
 dist-ssr
+tsconfig.tsbuildinfo
 *.local
 
 # Editor directories and files
@@ -23,5 +25,5 @@ dist-ssr
 *.sw?
 .claude
 
-# Build
-dist
+# Test coverage
+coverage
