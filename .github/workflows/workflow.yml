@@ -22,17 +22,6 @@ jobs:
       node-version: "22.x"
       package-version: ${{ needs.check-version.outputs.version }}
 
-  deploy-npm:
-    name: Package
-    needs:
-      - check-version
-      - build
-    uses: ./.github/workflows/deploy-npm.yml
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    with:
-      node-version: "22.x"
-      package-version: ${{ needs.check-version.outputs.version }}
 
   deploy-github:
     name: Package
