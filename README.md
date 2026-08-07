@@ -1,4 +1,8 @@
-# @sovgut/datagrid
+<p align="center">
+<img src="https://raw.githubusercontent.com/Sovgut/datagrid/main/assets/logo.svg" alt="" width="72" height="72" />
+</p>
+
+<h1 align="center">@sovgut/datagrid</h1>
 
 <p align="center">
 Headless state management for React data grids. It owns pagination, sorting, per-column filters, selection and column visibility, and leaves every pixel of markup to you.
@@ -607,13 +611,6 @@ interchangeable and costs nothing to anyone who names their type.
 `DATAGRID_DEFAULT_FILTER` and `DATAGRID_DEFAULT_SELECTED` are single
 module-level values shared by every grid on the page. Read them, spread them,
 never mutate them in place.
-
-### A note on `noPropertyAccessFromIndexSignature`
-
-The package does not enable it, and neither should you on its account.
-`context.filter.currency` stays the recommended style in `deriveState`. Filter
-values are `any` behind an index signature, so the flag would cost every filter
-access a bracket without buying any safety.
 
 ## Contributing
 
