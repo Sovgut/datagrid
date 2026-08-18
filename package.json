@@ -38,7 +38,8 @@
   "exports": {
     ".": {
       "types": "./dist/main.d.ts",
-      "import": "./dist/datagrid.js"
+      "import": "./dist/datagrid.js",
+      "require": "./dist/datagrid.js"
     },
     "./package.json": "./package.json"
   },
