@@ -236,7 +236,7 @@ export type DataGridColumn<
  *
  * ```ts
  * const grid = useRef<DataGridRef<User>>(null);
- * grid.current?.rows[0].name; // string
+ * grid.current?.rows[0]?.name; // string | undefined
  * ```
  *
  * The type parameter defaults to `ExpectedAny` rather than to
