@@ -46,7 +46,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "tsc -b && vite build",
     "deploy:npm": "npm publish --access public",
     "lint": "biome lint .",
     "format": "biome format . --write",
