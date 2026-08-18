@@ -23,7 +23,14 @@ tsconfig.tsbuildinfo
 *.njsproj
 *.sln
 *.sw?
-.claude
+.working
+
+# Claude Code: the project instructions are versioned, the local config is not.
+# The glob must be `.claude/*`, not `.claude/`, or the negations below cannot
+# reach inside an ignored directory.
+.claude/*
+!.claude/CLAUDE.md
+!.claude/rules/
 
 # Test coverage
 coverage
